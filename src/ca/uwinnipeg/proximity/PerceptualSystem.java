@@ -122,7 +122,7 @@ public class PerceptualSystem<O> {
    * @param B the second region
    * @return a set all descriptions within the intersect of the two regions
    */
-  public Set<Map<ProbeFunc<O>, Double>> getIntersect(Set<O> A, Set<O> B) {
+  public Set<Map<ProbeFunc<O>, Double>> getDescriptionBasedIntersect(Set<O> A, Set<O> B) {
     Set<Map<ProbeFunc<O>, Double>> intersect = new HashSet<Map<ProbeFunc<O>, Double>>();
     for (O a : A) {
       for (O b : B) {
@@ -134,6 +134,69 @@ public class PerceptualSystem<O> {
       }
     }
     return intersect;
+  }  
+  
+  /**
+   * Checks whether two regions are near using their description-based intersection.
+   * @param A the first region
+   * @param B the second region
+   * @return true if their description-based intersect is non-empty
+   */
+  public boolean descriptionBasedNear(Set<O> A, Set<O> B) {
+    return descriptionBasedDegree(A, B) > 0;
+  }
+  
+  /**
+   * Returns the degree using the description-based intersection.
+   * @param A the first region
+   * @param B the second region
+   * @return the degree of the description-based intersection
+   */
+  public int descriptionBasedDegree(Set<O> A, Set<O> B) {
+    return getDescriptionBasedIntersect(A, B).size();
+  }
+  
+  /**
+   * Returns the the hybrid intersection of two regions.
+   * @param A the first region
+   * @param B the second region
+   * @param epsilon the threshold distance between objects must be under to be an element
+   * @return a set all descriptions within the intersect of the two regions
+   */
+  public Set<Map<ProbeFunc<O>, Double>> getHybridIntersect(Set<O> A, Set<O> B, double epsilon) {
+    Set<Map<ProbeFunc<O>, Double>> intersect = new HashSet<Map<ProbeFunc<O>, Double>>();
+    for (O a : A) {
+      for (O b : B) {
+        if (distance(a, b) < epsilon) {
+          // If a match was found add to intersect and stop comparing to this object
+          intersect.add(getDescription(a));
+          break;
+        }
+      }
+    }
+    return intersect;
+  }
+  
+  /**
+   * Checks whether two regions are near using their hybrid intersection.
+   * @param A the first region
+   * @param B the second region
+   * @param epsilon the threshold distance between objects must be under to be an element
+   * @return true if their hybrid intersect is non-empty
+   */
+  public boolean hybridNear(Set<O> A, Set<O> B, double epsilon) {
+    return hybridDegree(A, B, epsilon) > 0;
+  }
+  
+  /**
+   * Returns the degree using the hybrid intersection.
+   * @param A the first region
+   * @param B the second region
+   * @param epsilon the threshold distance between objects must be under to be an element
+   * @return the degree of the hybrid intersection
+   */
+  public int hybridDegree(Set<O> A, Set<O> B, double epsilon) {
+    return getHybridIntersect(A, B, epsilon).size();
   }
 
   /**
