@@ -26,11 +26,15 @@ public class PerceptualSystem<O> {
   // The map of every object known to be contained in this system.
   // Objects do not need to be added to regions to be tested but it does allow their features
   // to be cached to speed up processing.
+  // It uses a WeakHashMap so objects that are only referenced in the cache are garbage collected.
   private Map<O, Map<ProbeFunc<O>, Double>> mObjectsMap = 
       new WeakHashMap<O, Map<ProbeFunc<O>, Double>>();
   
   // The set of probe functions
   protected Set<ProbeFunc<O>> mProbeFuncs = new HashSet<ProbeFunc<O>>();
+  
+  // Turns caching on and off
+  protected boolean mCache = true;
   
   /**
    * Creates an empty perceptual system.
@@ -40,11 +44,17 @@ public class PerceptualSystem<O> {
   /**
    * Creates a perceptual system described by the given probe functions.
    * @param funcs
+   * @param cache whether the system should cache descriptions
    */
-  public PerceptualSystem(ProbeFunc<O>[] funcs) {
+  public PerceptualSystem(ProbeFunc<O>[] funcs, boolean cache) {
+    mCache = cache;
     for (ProbeFunc<O> f : funcs) {
       addProbeFunc(f);
     }
+  }
+  
+  public boolean caching() {
+    return mCache;
   }
   
   /**
@@ -215,15 +225,15 @@ public class PerceptualSystem<O> {
    */
   public Map<ProbeFunc<O>, Double> getDescription(O obj) {
     Map<ProbeFunc<O>, Double> rtn;
-    // check if the object description has been cached
-    if (mObjectsMap.containsKey(obj)) {
+    // check if the object description has been cached and caching is enabled
+    if (mCache && mObjectsMap.containsKey(obj)) {
       // retrieve the description
       rtn = mObjectsMap.get(obj);
     }
     else {
       // calculate and cache the description
       rtn = calcDescription(obj);
-      mObjectsMap.put(obj, rtn);
+      if (mCache) mObjectsMap.put(obj, rtn);
     }
     return new HashMap<ProbeFunc<O>, Double>(rtn);
   }
@@ -271,10 +281,12 @@ public class PerceptualSystem<O> {
   public Set<O> addRegion(Set<O> objs) {
     Set<O> region = new HashSet<O>(objs);
     // cache object features
-    for (O o : region) {
-      // if the object has not yet been cached
-      if (!mObjectsMap.containsKey(o)) {
-        mObjectsMap.put(o, calcDescription(o));
+    if (mCache) {
+      for (O o : region) {
+        // if the object has not yet been cached
+        if (!mObjectsMap.containsKey(o)) {
+          mObjectsMap.put(o, calcDescription(o));
+        }
       }
     }
     mRegions.add(region);
@@ -304,9 +316,11 @@ public class PerceptualSystem<O> {
    */
   public void addProbeFunc(ProbeFunc<O> func) {
     // update cached features
-    for (O o : mObjectsMap.keySet()) {
-      Map<ProbeFunc<O>, Double> desc = mObjectsMap.get(o);
-      desc.put(func, func.apply(o));
+    if (mCache) {
+      for (O o : mObjectsMap.keySet()) {
+        Map<ProbeFunc<O>, Double> desc = mObjectsMap.get(o);
+        desc.put(func, func.apply(o));
+      }
     }
     mProbeFuncs.add(func);
   }
@@ -318,9 +332,11 @@ public class PerceptualSystem<O> {
    */
   public boolean removeProbeFunc(ProbeFunc<O> func) {
     // remove cached feature
-    for (O o : mObjectsMap.keySet()) {
-      Map<ProbeFunc<O>, Double> desc = mObjectsMap.get(o);
-      desc.remove(o);
+    if (mCache) {
+      for (O o : mObjectsMap.keySet()) {
+        Map<ProbeFunc<O>, Double> desc = mObjectsMap.get(o);
+        desc.remove(o);
+      }
     }
     return mProbeFuncs.remove(func);
   }
