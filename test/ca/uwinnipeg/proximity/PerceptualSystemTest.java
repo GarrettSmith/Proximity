@@ -21,8 +21,18 @@ public class PerceptualSystemTest {
   private ProbeFunc<String> lengthFunc = new ProbeFunc<String>() {
 
     @Override
-    public double apply(String str) {      
+    public double map(String str) {
       return str.length();
+    }
+
+    @Override
+    public double maximum() {
+      return 100;
+    }
+
+    @Override
+    public double minimum() {
+      return 0;
     }
     
   };
@@ -30,13 +40,23 @@ public class PerceptualSystemTest {
   private ProbeFunc<String> emptyFunc = new ProbeFunc<String>() {
 
     @Override
-    public double apply(String str) {
+    public double map(String str) {
       if (str.isEmpty()) {
         return 0;
       }
       else {
         return 1;
       }
+    }
+
+    @Override
+    public double maximum() {
+      return 1;
+    }
+
+    @Override
+    public double minimum() {
+      return 0;
     }
     
   };
