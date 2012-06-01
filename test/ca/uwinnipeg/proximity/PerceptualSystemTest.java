@@ -177,6 +177,31 @@ public class PerceptualSystemTest {
   }
 
   @Test
+  public void getDescriptionUnion() {
+    Set<Map<ProbeFunc<String>, Double>> descs = new HashSet<Map<ProbeFunc<String>, Double>>();
+    for (String s : allObjects) {
+      descs.add(sys.getDescription(s));
+    }
+
+    Set<Map<ProbeFunc<String>, Double>> result = sys.getDescriptionUnion(objectSet, objectSet2);
+    
+    // Make sure everything is accounted for
+    boolean allMatched = true;
+    for (Map<ProbeFunc<String>, Double> d1 : result) {
+      boolean found = false;
+      for (Map<ProbeFunc<String>, Double> d2 : descs) {
+        if (sys.equal(d1, d2)) {
+          found = true;
+        }
+      }
+      if (!found) {
+        allMatched = false;
+      }
+    }
+    assertTrue(allMatched);
+  }
+
+  @Test
   public void getDescriptionBasedIntersectEmpty() {
     assertTrue(sys.getDescriptionBasedIntersect(objectSet, objectSet2).isEmpty());
   }

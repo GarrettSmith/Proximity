@@ -82,14 +82,26 @@ public class PerceptualSystem<O> {
    */
   public boolean equal(O x, O y) {    
     // Optimisation for comparing the same object
-    if (x == y) return true;
+    if (x == y) {
+      return true;
+    }
+    else {
+      return equal(getDescription(x), getDescription(y));
+    }
+  }
+
+  /**
+   * Determines if two descriptions are equal.
+   * @param x
+   * @param y
+   * @return true if the two descriptions have the same features, false otherwise
+   */
+  public boolean equal(Map<ProbeFunc<O>, Double> x, Map<ProbeFunc<O>, Double> y) {
     // compare the value of each probe function
-    Map<ProbeFunc<O>, Double> descX = getDescription(x);
-    Map<ProbeFunc<O>, Double> descY = getDescription(y);
     for (ProbeFunc<O> f : mProbeFuncs) {
       // These values need to be cast or they don't compare properly
-      double xVal = descX.get(f);
-      double yVal = descY.get(f);
+      double xVal = x.get(f);
+      double yVal = y.get(f);
       if (xVal != yVal) {
         return false;
       }
@@ -131,6 +143,20 @@ public class PerceptualSystem<O> {
     return Math.sqrt(sum);
   }
   
+  public Set<Map<ProbeFunc<O>, Double>> getDescriptionUnion(Set<O> A, Set<O> B) {
+    // get union of objects
+    Set<O> objectUnion = new HashSet<O>(A);
+    objectUnion.addAll(B);
+    
+    // get the description of each object
+    Set<Map<ProbeFunc<O>, Double>> union = new HashSet<Map<ProbeFunc<O>, Double>>();
+    for (O o : objectUnion) { 
+      union.add(getDescription(o));
+    }
+    
+    return union;
+  }
+
   /**
    * Returns the description-based intersection of two regions.
    * @param A the first region
