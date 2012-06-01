@@ -202,6 +202,70 @@ public class PerceptualSystemTest {
   }
 
   @Test
+  public void getDescriptionBasedIntersectObjects() {
+    Set<String> s1 = new HashSet<String>();
+    s1.add(str1);
+    s1.add(str3);
+    s1.add(str5);
+    
+    Set<String> s2 = new HashSet<String>();
+    s2.add(str2);
+    s2.add(str4);
+    
+    Set<String> intersect = new HashSet<String>();
+    intersect.add(str1);
+    intersect.add(str2);
+    intersect.add(str4);
+    intersect.add(str5);
+    
+    Set<String> result = sys.getDescriptionBasedIntersectObjects(s1, s2);
+    
+    assertTrue(result.equals(intersect));
+  }
+  
+  @Test
+  public void descriptionBasedDegree() {
+    Set<String> s1 = new HashSet<String>();
+    s1.add(str1);
+    s1.add(str3);
+    s1.add(str5);
+    
+    Set<String> s2 = new HashSet<String>();
+    s2.add(str2);
+    s2.add(str4);
+    
+    Set<Map<ProbeFunc<String>, Double>> result = sys.getDescriptionBasedIntersect(s1, s2);
+    
+    assertEquals(result.size(), 2);
+  }
+  
+  @Test
+  public void descriptionBasedDegreeEmpty() {    
+    Set<Map<ProbeFunc<String>, Double>> result = 
+        sys.getDescriptionBasedIntersect(objectSet, objectSet2);    
+    assertEquals(result.size(), 0);
+  }
+  
+  @Test
+  public void descriptionBasedNearTrue() {
+    Set<String> s1 = new HashSet<String>();
+    s1.add(str1);
+    s1.add(str3);
+    s1.add(str5);
+    
+    Set<String> s2 = new HashSet<String>();
+    s2.add(str2);
+    s2.add(str4);
+    
+    assertTrue(sys.descriptionBasedNear(s1, s2));
+  }
+  
+  @Test
+  public void descriptionBasedNearFalse() {    
+    assertTrue(!sys.descriptionBasedNear(objectSet, objectSet2));
+  }
+
+  @Test
   public void getHybridIntersect() {
     double epsilon = 0.1;
     Set<Map<ProbeFunc<String>, Double>> intersect = new HashSet<Map<ProbeFunc<String>, Double>>();
@@ -213,6 +277,61 @@ public class PerceptualSystemTest {
       }
     }
     assertTrue(sys.getHybridIntersect(objectSet, objectSet2, epsilon).equals(intersect));
+  }
+  
+  @Test
+  public void getHybridIntersectObjects() {
+    double epsilon = 0.1;
+    Set<String> intersect = new HashSet<String>();
+    for (String x : objectSet) {
+      for (String y : objectSet2) {
+        if (sys.distance(x, y) < epsilon) {
+          intersect.add(x);
+          intersect.add(y);
+        }
+      }
+    }
+    assertTrue(sys.getHybridIntersectObjects(objectSet, objectSet2, epsilon).equals(intersect));
+  }
+  
+  @Test
+  public void hybridDegreeEmpty() {
+    double epsilon = 0.01;
+    Set<Map<ProbeFunc<String>, Double>> intersect = new HashSet<Map<ProbeFunc<String>, Double>>();
+    for (String x : objectSet) {
+      for (String y : objectSet2) {
+        if (sys.distance(x, y) < epsilon) {
+          intersect.add(sys.getDescription(x));
+        }
+      }
+    }
+    assertEquals(sys.hybridDegree(objectSet, objectSet2, epsilon), intersect.size());
+  }
+  
+  @Test
+  public void hybridDegree() {
+    double epsilon = 0.1;
+    Set<Map<ProbeFunc<String>, Double>> intersect = new HashSet<Map<ProbeFunc<String>, Double>>();
+    for (String x : objectSet) {
+      for (String y : objectSet2) {
+        if (sys.distance(x, y) < epsilon) {
+          intersect.add(sys.getDescription(x));
+        }
+      }
+    }
+    assertEquals(sys.hybridDegree(objectSet, objectSet2, epsilon), intersect.size());
+  }
+  
+  @Test 
+  public void hybridNearTrue() {
+    double epsilon = 0.1;
+    assertTrue(sys.hybridNear(objectSet, objectSet2, epsilon));
+  }
+  
+  @Test 
+  public void hybridNearFalse() {
+    double epsilon = 0.01;
+    assertTrue(!sys.hybridNear(objectSet, objectSet2, epsilon));
   }
 
   @Test

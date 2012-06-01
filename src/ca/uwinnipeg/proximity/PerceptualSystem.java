@@ -132,7 +132,7 @@ public class PerceptualSystem<O> {
   }
   
   /**
-   * Returns the the description-based intersection of two regions.
+   * Returns the description-based intersection of two regions.
    * @param A the first region
    * @param B the second region
    * @return a set all descriptions within the intersect of the two regions
@@ -145,6 +145,25 @@ public class PerceptualSystem<O> {
           // If a match was found add to intersect and stop comparing to this object
           intersect.add(getDescription(a));
           break;
+        }
+      }
+    }
+    return intersect;
+  }  
+  
+  /**
+   * Returns the objects with descriptions within the description-based intersection of two regions.
+   * @param A the first region
+   * @param B the second region
+   * @return a set all descriptions within the intersect of the two regions
+   */
+  public Set<O> getDescriptionBasedIntersectObjects(Set<O> A, Set<O> B) {
+    Set<O> intersect = new HashSet<O>();
+    for (O a : A) {
+      for (O b : B) {
+        if (equal(a, b)) {
+          intersect.add(a);
+          intersect.add(b);
         }
       }
     }
@@ -172,7 +191,7 @@ public class PerceptualSystem<O> {
   }
   
   /**
-   * Returns the the hybrid intersection of two regions.
+   * Returns the hybrid intersection of two regions.
    * @param A the first region
    * @param B the second region
    * @param epsilon the threshold distance between objects must be under to be an element
@@ -186,6 +205,27 @@ public class PerceptualSystem<O> {
           // If a match was found add to intersect and stop comparing to this object
           intersect.add(getDescription(a));
           break;
+        }
+      }
+    }
+    return intersect;
+  }
+  
+  /**
+   * Returns the objects with the descriptions within the hybrid intersection of two regions.
+   * @param A the first region
+   * @param B the second region
+   * @param epsilon the threshold distance between objects must be under to be an element
+   * @return a set all descriptions within the intersect of the two regions
+   */
+  public Set<O> getHybridIntersectObjects(Set<O> A, Set<O> B, double epsilon) {
+    Set<O> intersect = new HashSet<O>();
+    for (O a : A) {
+      for (O b : B) {
+        if (distance(a, b) < epsilon) {
+          // TODO: Can we make this better?
+          intersect.add(a);
+          intersect.add(b);
         }
       }
     }
