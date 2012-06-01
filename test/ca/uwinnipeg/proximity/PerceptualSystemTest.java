@@ -3,7 +3,6 @@ package ca.uwinnipeg.proximity;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -77,6 +76,8 @@ public class PerceptualSystemTest {
 
   Set<String> objectSet2 = new HashSet<String>();
   
+  Set<String> allObjects = new HashSet<String>();
+  
   @Before
   public void setUp() {
     sys = new PerceptualSystem<String>(funcs, true);
@@ -87,6 +88,9 @@ public class PerceptualSystemTest {
     objectSet2.add(str4);
     objectSet2.add(str5);
     sys.addRegion(objectSet2);
+    
+    allObjects.addAll(objectSet);
+    allObjects.addAll(objectSet2);
     
     funcSet.add(emptyFunc);
     funcSet.add(lengthFunc);
@@ -121,7 +125,8 @@ public class PerceptualSystemTest {
   @Test
   public void equalDifferent() {
     // They are the same length and both non-empty
-    assertTrue(sys.equal(str1, str2));
+    boolean result = sys.equal(str1, str2);
+    assertTrue(result);
   }
 
   @Test
@@ -131,8 +136,17 @@ public class PerceptualSystemTest {
   }
 
   @Test
-  public void GetHybridNeighbourhood() {
-    fail("Not yet implemented"); // TODO
+  public void getHybridNeighbourhood() {
+    // Calculate the hybrid neighbourhood ourselves
+    double eps = 0.02;
+    String x = str1;
+    Set<String> nb = new HashSet<String>();
+    for (String y : allObjects) {
+      if (sys.distance(x, y) < eps) {
+        nb.add(y);
+      }
+    }
+    assertTrue(sys.getHybridNeighbourhood(x, allObjects, eps).equals(nb));
   }
 
   @Test
@@ -188,8 +202,17 @@ public class PerceptualSystemTest {
   }
 
   @Test
-  public void GetHybridIntersect() {
-    fail("Not yet implemented"); // TODO
+  public void getHybridIntersect() {
+    double epsilon = 0.1;
+    Set<Map<ProbeFunc<String>, Double>> intersect = new HashSet<Map<ProbeFunc<String>, Double>>();
+    for (String x : objectSet) {
+      for (String y : objectSet2) {
+        if (sys.distance(x, y) < epsilon) {
+          intersect.add(sys.getDescription(x));
+        }
+      }
+    }
+    assertTrue(sys.getHybridIntersect(objectSet, objectSet2, epsilon).equals(intersect));
   }
 
   @Test
@@ -204,16 +227,15 @@ public class PerceptualSystemTest {
 
   @Test
   public void getObjects() {
-    Set<String> all = new HashSet<String>(objectSet);
-    all.addAll(objectSet2);
-    assertTrue(sys.getObjects().equals(all));
+    assertTrue(sys.getObjects().equals(allObjects));
   }
 
   @Test
   public void getRegions() {
     List<Set<String>> all = new ArrayList<Set<String>>();
-    all.add(objectSet2);
+    // We need to make sure we add this in the right order because lists are ordered
     all.add(objectSet);
+    all.add(objectSet2);
     List<Set<String>> result = sys.getRegions();
     assertTrue(result.equals(all));
   }

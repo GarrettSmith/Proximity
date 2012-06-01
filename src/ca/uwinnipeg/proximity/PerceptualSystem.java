@@ -81,11 +81,16 @@ public class PerceptualSystem<O> {
    * @return true if the two objects have the same features, false otherwise
    */
   public boolean equal(O x, O y) {    
+    // Optimisation for comparing the same object
+    if (x == y) return true;
     // compare the value of each probe function
     Map<ProbeFunc<O>, Double> descX = getDescription(x);
     Map<ProbeFunc<O>, Double> descY = getDescription(y);
     for (ProbeFunc<O> f : mProbeFuncs) {
-      if (descX.get(f) != descY.get(f)) {
+      // These values need to be cast or they don't compare properly
+      double xVal = descX.get(f);
+      double yVal = descY.get(f);
+      if (xVal != yVal) {
         return false;
       }
     }    
