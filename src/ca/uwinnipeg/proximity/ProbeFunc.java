@@ -10,8 +10,9 @@ public abstract class ProbeFunc<T> {
   
   /**
    * Maps a perceptual object to a real value representing a feature.
+   * This value must return a double between minimum() and maximum() or it will be constrained.
    * @param t the perceptual object.
-   * @return the real value representing the feature.
+   * @return the real value representing the feature between minimum() and maximum().
    */
   protected abstract double map(T t);
   
@@ -33,6 +34,15 @@ public abstract class ProbeFunc<T> {
    * @return the normalised real value representing the feature.
    */
   public double apply(T t) {
-    return (map(t) - minimum()) / (maximum() - minimum());
+    double result = map(t);
+    double max = maximum();
+    double min = minimum();
+    
+    // constrain to limits
+    result = Math.min(max, result);
+    result = Math.max(min, result);
+    
+    // normalise
+    return (result - min) / (max - min);
   }
 }
