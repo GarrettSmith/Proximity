@@ -6,5 +6,10 @@ public class GreenFunc extends ColorFunc {
   protected double map(Integer color) {
     return (color >> 8) & 0xFF;
   }
+  
+  @Override
+  public String toString() {
+    return "Green";
+  }
 
 }

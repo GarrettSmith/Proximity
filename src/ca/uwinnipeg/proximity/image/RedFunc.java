@@ -6,5 +6,10 @@ public class RedFunc extends ColorFunc {
   protected double map(Integer color) {
     return (color >> 16) & 0xFF;
   }
+  
+  @Override
+  public String toString() {
+    return "Red";
+  }
 
 }
