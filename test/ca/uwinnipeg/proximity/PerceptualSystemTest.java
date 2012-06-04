@@ -25,12 +25,12 @@ public class PerceptualSystemTest {
     }
 
     @Override
-    public double maximum() {
+    protected double maximum() {
       return 100;
     }
 
     @Override
-    public double minimum() {
+    protected double minimum() {
       return 0;
     }
     
@@ -49,12 +49,12 @@ public class PerceptualSystemTest {
     }
 
     @Override
-    public double maximum() {
+    protected double maximum() {
       return 1;
     }
 
     @Override
-    public double minimum() {
+    protected double minimum() {
       return 0;
     }
     

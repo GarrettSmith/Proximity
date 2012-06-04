@@ -20,13 +20,13 @@ public abstract class ProbeFunc<T> {
    * Returns the largest non-normalised value of this feature.
    * @return
    */
-  public abstract double maximum();
+  protected abstract double maximum();
   
   /**
    * Returns the smallest non-normalised value of this feature.
    * @return
    */
-  public abstract double minimum();
+  protected abstract double minimum();
   
   /**
    * Maps a perceptual object to a normalised real value representing a feature.

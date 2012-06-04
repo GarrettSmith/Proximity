@@ -17,7 +17,6 @@ import java.util.WeakHashMap;
  *
  */
 // TODO: Test if this will be fast enough
-// TODO: Implement unit tests
 public class PerceptualSystem<O> {
   
   // The list of regions of interest
@@ -63,7 +62,6 @@ public class PerceptualSystem<O> {
    * @param region the set of all objects being compared
    * @return the set of objects within the neighbourhood
    */
-  // TODO: Used cached values
   public Set<O> getDescriptionBasedNeighbourhood(O x, Set<O> region) {
     Set<O> neighbourhood = new HashSet<O>();
     for (O y : region) {
@@ -131,7 +129,7 @@ public class PerceptualSystem<O> {
    * Calculates the distance between the given objects in feature space.
    * @param x
    * @param y
-   * @return
+   * @return the distance between the given objects in feature space
    */
   public double distance(O x, O y) {
     Map<ProbeFunc<O>, Double> descX = getDescription(x);
@@ -249,7 +247,6 @@ public class PerceptualSystem<O> {
     for (O a : A) {
       for (O b : B) {
         if (distance(a, b) < epsilon) {
-          // TODO: Can we make this better?
           intersect.add(a);
           intersect.add(b);
         }
@@ -324,7 +321,7 @@ public class PerceptualSystem<O> {
   
   /**
    * Returns a set containing every perceptual object of the system.
-   * @return
+   * @return every perceptual object of the system
    */
   public Set<O> getObjects() {    
     Set<O> objs = new HashSet<O>();
@@ -336,7 +333,7 @@ public class PerceptualSystem<O> {
   
   /**
    * Returns a list of all the regions of the system.
-   * @return
+   * @return a list of all the regions of the system
    */
   public List<Set<O>> getRegions() {
     List<Set<O>> list = new ArrayList<Set<O>>();
@@ -375,7 +372,7 @@ public class PerceptualSystem<O> {
   
   /**
    * Returns a set containing the probe functions of the system.
-   * @return
+   * @return a set containing the probe functions of the system
    */
   public Set<ProbeFunc<O>> getProbeFuncs() {
     return new HashSet<ProbeFunc<O>>(mProbeFuncs);
