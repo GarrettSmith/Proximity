@@ -6,5 +6,10 @@ public class AlphaFunc extends ColorFunc {
   protected double map(Integer color) {
     return (color >> 24) & 0xFF;
   }
+  
+  @Override
+  public String toString() {
+    return "Alpha";
+  }
 
 }
