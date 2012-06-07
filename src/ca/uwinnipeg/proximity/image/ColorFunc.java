@@ -10,7 +10,7 @@ import ca.uwinnipeg.proximity.ProbeFunc;
  * @author Garrett Smith
  *
  */
-public abstract class ColorFunc extends ProbeFunc<Integer> {
+public abstract class ColorFunc extends ProbeFunc<Pixel> {
 
   @Override
   protected double maximum() {
