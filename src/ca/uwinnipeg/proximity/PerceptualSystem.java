@@ -57,22 +57,6 @@ public class PerceptualSystem<O> {
   }
   
   /**
-   * Returns a description-based neighbourhood.
-   * @param x the object to compare against
-   * @param region the set of all objects being compared
-   * @return the set of objects within the neighbourhood
-   */
-  public Set<O> getDescriptionBasedNeighbourhood(O x, Set<O> region) {
-    Set<O> neighbourhood = new HashSet<O>();
-    for (O y : region) {
-      if (equal(x, y)) {
-        neighbourhood.add(y);
-      }
-    }
-    return neighbourhood;
-  }
-  
-  /**
    * Determines if two perceptual objects are equal.
    * @param x
    * @param y
@@ -109,6 +93,48 @@ public class PerceptualSystem<O> {
   }
 
   /**
+   * Calculates the distance between the given objects in feature space.
+   * @param x
+   * @param y
+   * @return the distance between the given objects in feature space
+   */
+  public double distance(O x, O y) {
+    Map<ProbeFunc<O>, Double> descX = getDescription(x);
+    Map<ProbeFunc<O>, Double> descY = getDescription(y);
+    return distance(descX, descY);
+  }
+
+  /**
+   * Calculates the distance between the given descriptions in feature space.
+   * @param x
+   * @param y
+   * @return the distance between the given descriptions in feature space
+   */
+  public double distance(Map<ProbeFunc<O>, Double> x, Map<ProbeFunc<O>, Double> y) {
+    double sum = 0;
+    for (ProbeFunc<O> f : mProbeFuncs) {
+      sum += Math.pow((x.get(f) - y.get(f)), 2);
+    }
+    return Math.sqrt(sum);
+  }
+  
+  /**
+   * Returns a description-based neighbourhood.
+   * @param x the object to compare against
+   * @param region the set of all objects being compared
+   * @return the set of objects within the neighbourhood
+   */
+  public Set<O> getDescriptionBasedNeighbourhood(O x, Set<O> region) {
+    Set<O> neighbourhood = new HashSet<O>();
+    for (O y : region) {
+      if (equal(x, y)) {
+        neighbourhood.add(y);
+      }
+    }
+    return neighbourhood;
+  }
+
+  /**
    * Returns a hybrid neighbourhood.
    * @param x the object to compare against
    * @param region the set of all objects being compared
@@ -124,23 +150,7 @@ public class PerceptualSystem<O> {
     }
     return neighbourhood;
   }
-  
-  /**
-   * Calculates the distance between the given objects in feature space.
-   * @param x
-   * @param y
-   * @return the distance between the given objects in feature space
-   */
-  public double distance(O x, O y) {
-    Map<ProbeFunc<O>, Double> descX = getDescription(x);
-    Map<ProbeFunc<O>, Double> descY = getDescription(y);
-    double sum = 0;
-    for (ProbeFunc<O> f : mProbeFuncs) {
-      sum += Math.pow((descX.get(f) - descY.get(f)), 2);
-    }
-    return Math.sqrt(sum);
-  }
-  
+
   public Set<Map<ProbeFunc<O>, Double>> getDescriptionUnion(Set<O> A, Set<O> B) {
     // get union of objects
     Set<O> objectUnion = new HashSet<O>(A);
@@ -156,6 +166,39 @@ public class PerceptualSystem<O> {
   }
 
   /**
+   * Returns the description-based intersection of a list of regions.
+   * @param regions the list of regions
+   * @return a set all descriptions within the intersect of the two regions
+   */
+  public Set<Map<ProbeFunc<O>, Double>> getDescriptionBasedIntersect(List<Set<O>> regions) {
+    // calculate the objects in the intersect of the first two regions
+    Set<Map<ProbeFunc<O>, Double>> intersect = 
+        new HashSet<Map<ProbeFunc<O>, Double>>(
+            getDescriptionBasedIntersect(regions.get(0), regions.get(1)));
+
+    // calculate the intersect of the current intersect and the next region
+    for (int i = 2; i < regions.size(); i++) {
+      Set<O> region = regions.get(i);
+      Set<Map<ProbeFunc<O>, Double>> newIntersect = new HashSet<Map<ProbeFunc<O>, Double>>();
+
+      for (O a : region) {
+        Map<ProbeFunc<O>, Double> descA = getDescription(a);
+        for (Map<ProbeFunc<O>, Double> descB : intersect) {
+          if (equal(descA, descB)) {
+            // If a match was found add to intersect and stop comparing to this object
+            newIntersect.add(descA);
+            break;
+          }
+        }
+      }
+
+        intersect = newIntersect;
+      }
+
+      return intersect;
+    }
+
+    /**
    * Returns the description-based intersection of two regions.
    * @param A the first region
    * @param B the second region
@@ -174,6 +217,25 @@ public class PerceptualSystem<O> {
     }
     return intersect;
   }  
+  
+  /**
+   * Returns the objects with descriptions within the description-based intersection of a list of 
+   * regions.
+   * @param regions the list of regions
+   * @return a set all descriptions within the intersect of the two regions
+   */
+  public Set<O> getDescriptionBasedIntersectObjects(List<Set<O>> regions) {
+    // calculate the objects in the intersect of the first two regions
+    Set<O> intersect = 
+        new HashSet<O>(getDescriptionBasedIntersectObjects(regions.get(0), regions.get(1)));
+    
+    // calculate the intersect of the current intersect and the next region
+    for (int i = 2; i < regions.size(); i++) {
+      intersect = getDescriptionBasedIntersectObjects(intersect, regions.get(i));
+    }
+    
+    return intersect;
+  }
   
   /**
    * Returns the objects with descriptions within the description-based intersection of two regions.
@@ -214,6 +276,41 @@ public class PerceptualSystem<O> {
     return getDescriptionBasedIntersect(A, B).size();
   }
   
+  
+  /**
+   * Returns the hybrid intersection of a list of regions.
+   * @param regions the list of regions
+   * @param epsilon the threshold distance between objects must be under to be an element
+   * @return a set all descriptions within the intersect of the two regions
+   */
+  public Set<Map<ProbeFunc<O>, Double>> getHybridIntersect(List<Set<O>> regions, double epsilon) {
+    // calculate the objects in the intersect of the first two regions
+    Set<Map<ProbeFunc<O>, Double>> intersect = 
+        new HashSet<Map<ProbeFunc<O>, Double>>(
+            getDescriptionBasedIntersect(regions.get(0), regions.get(1)));
+
+    // calculate the intersect of the current intersect and the next region
+    for (int i = 2; i < regions.size(); i++) {
+      Set<O> region = regions.get(i);
+      Set<Map<ProbeFunc<O>, Double>> newIntersect = new HashSet<Map<ProbeFunc<O>, Double>>();
+
+      for (O a : region) {
+        Map<ProbeFunc<O>, Double> descA = getDescription(a);
+        for (Map<ProbeFunc<O>, Double> descB : intersect) {
+          if (distance(descA, descB) < epsilon) {
+            // If a match was found add to intersect and stop comparing to this object
+            newIntersect.add(descA);
+            break;
+          }
+        }
+      }
+
+        intersect = newIntersect;
+      }
+
+      return intersect;
+    }
+  
   /**
    * Returns the hybrid intersection of two regions.
    * @param A the first region
@@ -232,6 +329,25 @@ public class PerceptualSystem<O> {
         }
       }
     }
+    return intersect;
+  }
+  
+  /**
+   * Returns the objects with the descriptions within the hybrid intersection of a list of regions.
+   * @param regions the list of regions
+   * @param epsilon the threshold distance between objects must be under to be an element
+   * @return a set all descriptions within the intersect of the two regions
+   */
+  public Set<O> getHybridIntersectObjects(List<Set<O>> regions, double epsilon) {
+    // calculate the objects in the intersect of the first two regions
+    Set<O> intersect = 
+        new HashSet<O>(getHybridIntersectObjects(regions.get(0), regions.get(1), epsilon));
+    
+    // calculate the intersect of the current intersect and the next region
+    for (int i = 2; i < regions.size(); i++) {
+      intersect = getHybridIntersectObjects(intersect, regions.get(i), epsilon);
+    }
+    
     return intersect;
   }
   
