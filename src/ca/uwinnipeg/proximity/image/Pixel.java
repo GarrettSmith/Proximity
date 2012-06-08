@@ -33,7 +33,7 @@ public class Pixel {
    * @return
    */
   public int getColor() {
-    return image.mPixels[x][y];
+    return image.mPixelInts[x][y];
   }
 
 }
