@@ -3,56 +3,36 @@
  */
 package ca.uwinnipeg.proximity.image;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
+
+import ca.uwinnipeg.proximity.PerceptualSystem;
 
 /**
  * An immutable array of pixels.
  * @author Garrett Smith
  *
  */
-public class Image {
+public class Image extends PerceptualSystem<Pixel> {
   
   // The ARGB integers representing the pixels of the image.
-  protected int[][] mPixelInts;
-  
-  // The array of pixel objets
-  protected Pixel[][] mPixels;
+  protected int[] mPixelInts;
   
   public final int width, height;
   public final int size;
   
-  /**
-   * Creates a new image given the ARGB integer pixel values.
-   * @param pixels
-   */
-  public Image(int[][] pixels) {
-    width = pixels.length;
-    height = pixels[0].length;
-    size = width * height;
-    
-    mPixelInts = new int[width][height];
-    mPixels = new Pixel[width][height];
-    
-    for (int i = 0; i < width; i++) {
-      for (int j = 0; j < height; j++) {
-        mPixelInts[i][j] = pixels[i][j];
-      }
-    }
-  }
-  
   public Image(int[] pixels, int width, int height) {
+    super(width * height);
+    
     this.width = width;
     this.height = height;
     size = pixels.length;
 
-    mPixelInts = new int[width][height];
-    mPixels = new Pixel[width][height];
+    mPixelInts = new int[size];
 
-    for (int i = 0; i < width; i++) {
-      for (int j = 0; j < height; j++) {
-        mPixelInts[i][j] = pixels[j * width + i];
-      }
+    for (int i = 0; i < size; i++) {
+        mPixelInts[i] = pixels[i];
+        addObject(i, new Pixel(this, i % width, i / width));
     }
   }
   
@@ -64,35 +44,38 @@ public class Image {
    * @return
    */
   public Pixel getPixel(int x, int y) {
-    Pixel p = mPixels[x][y];
-    
-    // check if the pixel was cached, if not create it and cache it
-    if (p == null) {
-      p = new Pixel(this, x, y);
-      mPixels[x][y] = p;
-    }
-    
-    return p;
+    return mObjects.get(y * width + x);
   }
   
   /**
-   * Returns a {@link Pixel} set of all the pixels within the given rectangle.
+   * Returns a {@link Pixel} list of all the pixels within the given rectangle.
    * @param left
    * @param top
    * @param right
    * @param bottom
    * @return
    */
-  public Set<Pixel> getPixels(int left, int top, int right, int bottom) {
+  public List<Pixel> getPixels(int left, int top, int right, int bottom) {
     int width = (right - left);
     int height = (bottom - top);
-    Set<Pixel> pxls = new HashSet<Pixel>(width * height);
-    for (int i = left; i < right; i++) {
-      for (int j = top; j < bottom; j++) {
-        pxls.add(getPixel(i, j));
+    List<Pixel> pxls = new ArrayList<Pixel>(width * height);
+    for (int x = left; x < right; x++) {
+      for (int y = top; y < bottom; y++) {
+        pxls.add(getPixel(x, y));
       }
     }
     return pxls;
+  }
+  
+  public int[] getIndices(int left, int top, int right, int bottom) {
+    int w = (right - left);
+    int h = (bottom - top);
+    int s = w * h;
+    int[] indices = new int[s];
+    for (int i = 0; i < s; i++) {
+      indices[i] = (top + (i / w)) * width + (left + (i % w));
+    }
+    return indices;
   }
 
 }

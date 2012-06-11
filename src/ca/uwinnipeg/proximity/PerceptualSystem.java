@@ -4,56 +4,40 @@
 package ca.uwinnipeg.proximity;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 
 /**
- * A perceptual system consists of a set of perceptual objects and and a set of {@link ProbeFunc}.
+ * A perceptual system consists of a List of perceptual objects and and a List of {@link ProbeFunc}.
  * @author Garrett Smith
  *
  */
-// TODO: Test if this will be fast enough
 public class PerceptualSystem<O> {
   
-  // The list of regions of interest
-  protected List<Set<O>> mRegions = new ArrayList<Set<O>>();
+  // The perceptual objects within the system
+  protected List<O> mObjects = new ArrayList<O>();
   
-  // The map of every object known to be contained in this system.
-  // Objects do not need to be added to regions to be tested but it does allow their features
-  // to be cached to speed up processing.
-  // It uses a WeakHashMap so objects that are only referenced in the cache are garbage collected.
-  private Map<O, Map<ProbeFunc<O>, Double>> mObjectsMap = 
-      new WeakHashMap<O, Map<ProbeFunc<O>, Double>>();
+  // The description of every perceptual object in the system.
+  // To get a description use mDescriptions[Object index][ProbeFunc index].
+  private List<List<Double>> mDescriptions = new ArrayList<List<Double>>();
   
-  // The set of probe functions
-  protected Set<ProbeFunc<O>> mProbeFuncs = new HashSet<ProbeFunc<O>>();
-  
-  // Turns caching on and off
-  protected boolean mCache = true;
+  // The list of probe functions
+  protected List<ProbeFunc<O>> mProbeFuncs = new ArrayList<ProbeFunc<O>>();
   
   /**
    * Creates an empty perceptual system.
+   * @param size
    */
   public PerceptualSystem() {}
   
   /**
-   * Creates a perceptual system described by the given probe functions.
-   * @param funcs
-   * @param cache whether the system should cache descriptions
+   * Creates an empty perceptual system with the given number of objects.
+   * @param size
    */
-  public PerceptualSystem(ProbeFunc<O>[] funcs, boolean cache) {
-    mCache = cache;
-    for (ProbeFunc<O> f : funcs) {
-      addProbeFunc(f);
-    }
-  }
-  
-  public boolean caching() {
-    return mCache;
+  public PerceptualSystem(int size) {
+    mObjects = new ArrayList<O>(size);
+    mDescriptions = new ArrayList<List<Double>>(size);
   }
   
   /**
@@ -78,12 +62,13 @@ public class PerceptualSystem<O> {
    * @param y
    * @return true if the two descriptions have the same features, false otherwise
    */
-  public boolean equal(Map<ProbeFunc<O>, Double> x, Map<ProbeFunc<O>, Double> y) {
+  public boolean equal(List<Double> x, List<Double> y) {
     // compare the value of each probe function
-    for (ProbeFunc<O> f : mProbeFuncs) {
+    int size = mProbeFuncs.size();
+    for (int i = 0; i < size; i++) {
       // These values need to be cast or they don't compare properly
-      double xVal = x.get(f);
-      double yVal = y.get(f);
+      double xVal = x.get(i);
+      double yVal = y.get(i);
       if (xVal != yVal) {
         return false;
       }
@@ -99,8 +84,8 @@ public class PerceptualSystem<O> {
    * @return the distance between the given objects in feature space
    */
   public double distance(O x, O y) {
-    Map<ProbeFunc<O>, Double> descX = getDescription(x);
-    Map<ProbeFunc<O>, Double> descY = getDescription(y);
+    List<Double> descX = getDescription(x);
+    List<Double> descY = getDescription(y);
     return distance(descX, descY);
   }
 
@@ -110,10 +95,12 @@ public class PerceptualSystem<O> {
    * @param y
    * @return the distance between the given descriptions in feature space
    */
-  public double distance(Map<ProbeFunc<O>, Double> x, Map<ProbeFunc<O>, Double> y) {
+  public double distance(List<Double> x, List<Double> y) {
     double sum = 0;
-    for (ProbeFunc<O> f : mProbeFuncs) {
-      sum += Math.pow((x.get(f) - y.get(f)), 2);
+    int size = mProbeFuncs.size();
+    for (int i = 0; i < size; i++) {
+      double tmp = x.get(i) - y.get(i);
+      sum += tmp * tmp;
     }
     return Math.sqrt(sum);
   }
@@ -121,13 +108,17 @@ public class PerceptualSystem<O> {
   /**
    * Returns a description-based neighbourhood.
    * @param x the object to compare against
-   * @param region the set of all objects being compared
-   * @return the set of objects within the neighbourhood
+   * @param objs the List of all objects being compared
+   * @return the List of objects within the neighbourhood
    */
-  public Set<O> getDescriptionBasedNeighbourhood(O x, Set<O> region) {
-    Set<O> neighbourhood = new HashSet<O>();
-    for (O y : region) {
-      if (equal(x, y)) {
+  public List<O> getDescriptionBasedNeighbourhood(O x, List<O> region) {
+    List<Double> descX = getDescription(x);
+    List<O> neighbourhood = new ArrayList<O>();
+    int size = region.size();
+    for (int i = 0; i < size; i++) {
+      O y = region.get(i);
+      List<Double> descY = getDescription(y);
+      if (equal(descX, descY)) {
         neighbourhood.add(y);
       }
     }
@@ -137,27 +128,50 @@ public class PerceptualSystem<O> {
   /**
    * Returns a hybrid neighbourhood.
    * @param x the object to compare against
-   * @param region the set of all objects being compared
+   * @param region the List of all objects being compared
    * @param epsilon the threshold objects must be under to be an element
-   * @return the set of objects within the neighbourhood
+   * @return the List of objects within the neighbourhood
    */
-  public Set<O> getHybridNeighbourhood(O x, Set<O> region, double epsilon) {
-    Set<O> neighbourhood = new HashSet<O>();
-    for (O y : region) {
-      if (distance(x, y) < epsilon) {
+  public List<O> getHybridNeighbourhood(O x, List<O> region, double epsilon) {
+    List<Double> descX = getDescription(x);
+    List<O> neighbourhood = new ArrayList<O>();    
+    int size = region.size();
+    for (int i = 0; i < size; i++) {
+      O y = region.get(i);
+      List<Double> descY = getDescription(y);
+      if (distance(descX, descY) < epsilon) {
         neighbourhood.add(y);
       }
     }
     return neighbourhood;
   }
 
-  public Set<Map<ProbeFunc<O>, Double>> getDescriptionUnion(Set<O> A, Set<O> B) {
+  /**
+   * Returns a hybrid neighbourhood.
+   * @param x the object to compare against
+   * @param region the List of all objects being compared
+   * @param epsilon the threshold objects must be under to be an element
+   * @return the List of objects within the neighbourhood
+   */
+  public List<O> getHybridNeighbourhood(O x, int[] indices, double epsilon) {
+    List<Double> descX = getDescription(x);
+    List<O> neighbourhood = new ArrayList<O>();
+    for (int i = 0; i < indices.length; i++) {
+      List<Double> descY = getDescription(indices[i]);
+      if (distance(descX, descY) < epsilon) {
+        neighbourhood.add(mObjects.get(indices[i]));
+      }
+    }
+    return neighbourhood;
+  }
+
+  public List<List<Double>> getDescriptionUnion(List<O> A, List<O> B) {
     // get union of objects
-    Set<O> objectUnion = new HashSet<O>(A);
+    List<O> objectUnion = new ArrayList<O>(A);
     objectUnion.addAll(B);
     
     // get the description of each object
-    Set<Map<ProbeFunc<O>, Double>> union = new HashSet<Map<ProbeFunc<O>, Double>>();
+    List<List<Double>> union = new ArrayList<List<Double>>();
     for (O o : objectUnion) { 
       union.add(getDescription(o));
     }
@@ -168,22 +182,22 @@ public class PerceptualSystem<O> {
   /**
    * Returns the description-based intersection of a list of regions.
    * @param regions the list of regions
-   * @return a set all descriptions within the intersect of the two regions
+   * @return a List all descriptions within the intersect of the two regions
    */
-  public Set<Map<ProbeFunc<O>, Double>> getDescriptionBasedIntersect(List<Set<O>> regions) {
+  public List<List<Double>> getDescriptionBasedIntersect(List<List<O>> regions) {
     // calculate the objects in the intersect of the first two regions
-    Set<Map<ProbeFunc<O>, Double>> intersect = 
-        new HashSet<Map<ProbeFunc<O>, Double>>(
+    List<List<Double>> intersect = 
+        new ArrayList<List<Double>>(
             getDescriptionBasedIntersect(regions.get(0), regions.get(1)));
 
     // calculate the intersect of the current intersect and the next region
     for (int i = 2; i < regions.size(); i++) {
-      Set<O> region = regions.get(i);
-      Set<Map<ProbeFunc<O>, Double>> newIntersect = new HashSet<Map<ProbeFunc<O>, Double>>();
+      List<O> region = regions.get(i);
+      List<List<Double>> newIntersect = new ArrayList<List<Double>>();
 
       for (O a : region) {
-        Map<ProbeFunc<O>, Double> descA = getDescription(a);
-        for (Map<ProbeFunc<O>, Double> descB : intersect) {
+        List<Double> descA = getDescription(a);
+        for (List<Double> descB : intersect) {
           if (equal(descA, descB)) {
             // If a match was found add to intersect and stop comparing to this object
             newIntersect.add(descA);
@@ -202,10 +216,10 @@ public class PerceptualSystem<O> {
    * Returns the description-based intersection of two regions.
    * @param A the first region
    * @param B the second region
-   * @return a set all descriptions within the intersect of the two regions
+   * @return a List all descriptions within the intersect of the two regions
    */
-  public Set<Map<ProbeFunc<O>, Double>> getDescriptionBasedIntersect(Set<O> A, Set<O> B) {
-    Set<Map<ProbeFunc<O>, Double>> intersect = new HashSet<Map<ProbeFunc<O>, Double>>();
+  public List<List<Double>> getDescriptionBasedIntersect(List<O> A, List<O> B) {
+    List<List<Double>> intersect = new ArrayList<List<Double>>();
     for (O a : A) {
       for (O b : B) {
         if (equal(a, b)) {
@@ -216,24 +230,35 @@ public class PerceptualSystem<O> {
       }
     }
     return intersect;
-  }  
+  }
   
   /**
-   * Returns the objects with descriptions within the description-based intersection of a list of 
-   * regions.
-   * @param regions the list of regions
-   * @return a set all descriptions within the intersect of the two regions
+   * Returns the objects with descriptions within the description-based intersection of two regions.
+   * @param A the first region
+   * @param B the second region
+   * @return a List all descriptions within the intersect of the two regions
    */
-  public Set<O> getDescriptionBasedIntersectObjects(List<Set<O>> regions) {
-    // calculate the objects in the intersect of the first two regions
-    Set<O> intersect = 
-        new HashSet<O>(getDescriptionBasedIntersectObjects(regions.get(0), regions.get(1)));
+  public Set<O> getDescriptionBasedIntersectObjects(List<O> A, List<O> B) {
+    Set<O> intersect = new HashSet<O>();
+    int sizeA = A.size();
+    int sizeB = B.size();
     
-    // calculate the intersect of the current intersect and the next region
-    for (int i = 2; i < regions.size(); i++) {
-      intersect = getDescriptionBasedIntersectObjects(intersect, regions.get(i));
+    // get all the descriptions of objects in B only once
+    List<List<Double>> descsB = new ArrayList<List<Double>>(sizeB);
+    for (int i = 0; i < sizeB; i++) {
+      descsB.add(i, getDescription(B.get(i)));
     }
     
+    for (int i = 0; i < sizeA; i++) {
+      O a = A.get(i);
+      List<Double> descA = getDescription(a);
+      for (int j = 0; j < sizeB; j++) {
+        if (equal(descA, descsB.get(j))) {  
+          intersect.add(a);
+          intersect.add(B.get(j));
+        }
+      }
+    }
     return intersect;
   }
   
@@ -241,20 +266,30 @@ public class PerceptualSystem<O> {
    * Returns the objects with descriptions within the description-based intersection of two regions.
    * @param A the first region
    * @param B the second region
-   * @return a set all descriptions within the intersect of the two regions
+   * @return a List all descriptions within the intersect of the two regions
    */
-  public Set<O> getDescriptionBasedIntersectObjects(Set<O> A, Set<O> B) {
+  public Set<O> getDescriptionBasedIntersectObjects(int[] A, int[] B) {
     Set<O> intersect = new HashSet<O>();
-    for (O a : A) {
-      for (O b : B) {
-        if (equal(a, b)) {
-          intersect.add(a);
-          intersect.add(b);
+    
+    // get all the descriptions of objects in B only once
+    List<List<Double>> descsB = new ArrayList<List<Double>>(B.length);
+    for (int i = 0; i < B.length; i++) {
+      descsB.add(i, getDescription(B[i]));
+    }
+    
+    for (int i = 0; i < A.length; i++) {
+      List<Double> descA = getDescription(A[i]);
+      for (int j = 0; j < B.length; j++) {
+        boolean added = false;
+        if (equal(descA, descsB.get(j))) {
+          if (!added) intersect.add(mObjects.get(A[i]));
+          intersect.add(mObjects.get(B[i]));
+          added = true;
         }
       }
     }
     return intersect;
-  }  
+  }
   
   /**
    * Checks whether two regions are near using their description-based intersection.
@@ -262,7 +297,7 @@ public class PerceptualSystem<O> {
    * @param B the second region
    * @return true if their description-based intersect is non-empty
    */
-  public boolean descriptionBasedNear(Set<O> A, Set<O> B) {
+  public boolean descriptionBasedNear(List<O> A, List<O> B) {
     return descriptionBasedDegree(A, B) > 0;
   }
   
@@ -272,7 +307,7 @@ public class PerceptualSystem<O> {
    * @param B the second region
    * @return the degree of the description-based intersection
    */
-  public int descriptionBasedDegree(Set<O> A, Set<O> B) {
+  public int descriptionBasedDegree(List<O> A, List<O> B) {
     return getDescriptionBasedIntersect(A, B).size();
   }
   
@@ -281,22 +316,22 @@ public class PerceptualSystem<O> {
    * Returns the hybrid intersection of a list of regions.
    * @param regions the list of regions
    * @param epsilon the threshold distance between objects must be under to be an element
-   * @return a set all descriptions within the intersect of the two regions
+   * @return a List all descriptions within the intersect of the two regions
    */
-  public Set<Map<ProbeFunc<O>, Double>> getHybridIntersect(List<Set<O>> regions, double epsilon) {
+  public List<List<Double>> getHybridIntersect(List<List<O>> regions, double epsilon) {
     // calculate the objects in the intersect of the first two regions
-    Set<Map<ProbeFunc<O>, Double>> intersect = 
-        new HashSet<Map<ProbeFunc<O>, Double>>(
+    List<List<Double>> intersect = 
+        new ArrayList<List<Double>>(
             getDescriptionBasedIntersect(regions.get(0), regions.get(1)));
 
     // calculate the intersect of the current intersect and the next region
     for (int i = 2; i < regions.size(); i++) {
-      Set<O> region = regions.get(i);
-      Set<Map<ProbeFunc<O>, Double>> newIntersect = new HashSet<Map<ProbeFunc<O>, Double>>();
+      List<O> region = regions.get(i);
+      List<List<Double>> newIntersect = new ArrayList<List<Double>>();
 
       for (O a : region) {
-        Map<ProbeFunc<O>, Double> descA = getDescription(a);
-        for (Map<ProbeFunc<O>, Double> descB : intersect) {
+        List<Double> descA = getDescription(a);
+        for (List<Double> descB : intersect) {
           if (distance(descA, descB) < epsilon) {
             // If a match was found add to intersect and stop comparing to this object
             newIntersect.add(descA);
@@ -316,10 +351,10 @@ public class PerceptualSystem<O> {
    * @param A the first region
    * @param B the second region
    * @param epsilon the threshold distance between objects must be under to be an element
-   * @return a set all descriptions within the intersect of the two regions
+   * @return a List all descriptions within the intersect of the two regions
    */
-  public Set<Map<ProbeFunc<O>, Double>> getHybridIntersect(Set<O> A, Set<O> B, double epsilon) {
-    Set<Map<ProbeFunc<O>, Double>> intersect = new HashSet<Map<ProbeFunc<O>, Double>>();
+  public List<List<Double>> getHybridIntersect(List<O> A, List<O> B, double epsilon) {
+    List<List<Double>> intersect = new ArrayList<List<Double>>();
     for (O a : A) {
       for (O b : B) {
         if (distance(a, b) < epsilon) {
@@ -336,12 +371,12 @@ public class PerceptualSystem<O> {
    * Returns the objects with the descriptions within the hybrid intersection of a list of regions.
    * @param regions the list of regions
    * @param epsilon the threshold distance between objects must be under to be an element
-   * @return a set all descriptions within the intersect of the two regions
+   * @return a List all descriptions within the intersect of the two regions
    */
-  public Set<O> getHybridIntersectObjects(List<Set<O>> regions, double epsilon) {
+  public List<O> getHybridIntersectObjects(List<List<O>> regions, double epsilon) {
     // calculate the objects in the intersect of the first two regions
-    Set<O> intersect = 
-        new HashSet<O>(getHybridIntersectObjects(regions.get(0), regions.get(1), epsilon));
+    List<O> intersect = 
+        new ArrayList<O>(getHybridIntersectObjects(regions.get(0), regions.get(1), epsilon));
     
     // calculate the intersect of the current intersect and the next region
     for (int i = 2; i < regions.size(); i++) {
@@ -356,10 +391,10 @@ public class PerceptualSystem<O> {
    * @param A the first region
    * @param B the second region
    * @param epsilon the threshold distance between objects must be under to be an element
-   * @return a set all descriptions within the intersect of the two regions
+   * @return a List all descriptions within the intersect of the two regions
    */
-  public Set<O> getHybridIntersectObjects(Set<O> A, Set<O> B, double epsilon) {
-    Set<O> intersect = new HashSet<O>();
+  public List<O> getHybridIntersectObjects(List<O> A, List<O> B, double epsilon) {
+    List<O> intersect = new ArrayList<O>();
     for (O a : A) {
       for (O b : B) {
         if (distance(a, b) < epsilon) {
@@ -378,7 +413,7 @@ public class PerceptualSystem<O> {
    * @param epsilon the threshold distance between objects must be under to be an element
    * @return true if their hybrid intersect is non-empty
    */
-  public boolean hybridNear(Set<O> A, Set<O> B, double epsilon) {
+  public boolean hybridNear(List<O> A, List<O> B, double epsilon) {
     return hybridDegree(A, B, epsilon) > 0;
   }
   
@@ -389,17 +424,8 @@ public class PerceptualSystem<O> {
    * @param epsilon the threshold distance between objects must be under to be an element
    * @return the degree of the hybrid intersection
    */
-  public int hybridDegree(Set<O> A, Set<O> B, double epsilon) {
+  public int hybridDegree(List<O> A, List<O> B, double epsilon) {
     return getHybridIntersect(A, B, epsilon).size();
-  }
-
-  /**
-   * Gets the description map for every *known* perceptual object within the system.
-   * An object must have been previously added to the system in a region to be cached and known.
-   * @return a map of every object to its corresponding description map. 
-   */
-  public Map<O, Map<ProbeFunc<O>, Double>> getCachedDescriptions() {
-    return new HashMap<O, Map<ProbeFunc<O>, Double>>(mObjectsMap);
   }
   
   /**
@@ -407,91 +433,76 @@ public class PerceptualSystem<O> {
    * @param obj the perceptual object
    * @return a map mapping each probe function to its applied value
    */
-  public Map<ProbeFunc<O>, Double> getDescription(O obj) {
-    Map<ProbeFunc<O>, Double> rtn;
-    // check if the object description has been cached and caching is enabled
-    if (mCache && mObjectsMap.containsKey(obj)) {
-      // retrieve the description
-      rtn = mObjectsMap.get(obj);
-    }
-    else {
-      // calculate and cache the description
-      rtn = calcDescription(obj);
-      if (mCache) mObjectsMap.put(obj, rtn);
-    }
-    return new HashMap<ProbeFunc<O>, Double>(rtn);
+  public List<Double> getDescription(O obj) {
+    // retrieve the description
+    return mDescriptions.get(mObjects.indexOf(obj));
   }
   
+  public List<Double> getDescription(int index) {
+    // retrieve the description
+    return mDescriptions.get(index);
+  }
+
   /**
    * Calculates the description of a perceptual object by applying every probe function to the object.
    * @param obj the perceptual object
    * @return a map mapping each probe function to its applied value
    */
-  private Map<ProbeFunc<O>, Double> calcDescription(O obj) {
-    Map<ProbeFunc<O>, Double> map = new HashMap<ProbeFunc<O>, Double>();
-    for (ProbeFunc<O> f : mProbeFuncs) {
-      map.put(f, f.apply(obj));
+  private List<Double> calcDescription(O obj) {
+    int funcSize = mProbeFuncs.size();
+    List<Double> desc = new ArrayList<Double>(funcSize);
+    for (int i = 0; i < funcSize; i++) {
+      desc.add(i, mProbeFuncs.get(i).apply(obj));
     }
-    return map;
+    return desc;
   }
   
   /**
-   * Returns a set containing every perceptual object of the system.
+   * Returns a List containing every perceptual object of the system.
    * @return every perceptual object of the system
    */
-  public Set<O> getObjects() {    
-    Set<O> objs = new HashSet<O>();
-    for (Set<O> region : mRegions) {
-      objs.addAll(region);
+  public List<O> getObjects() {    
+    return new ArrayList<O>(mObjects);
+  }
+  
+  public void addObject(O obj) {
+    // calculate description
+    mDescriptions.add(calcDescription(obj));
+    mObjects.add(obj);
+  }
+  
+  public void addObject(int index, O obj) {
+    // calculate description
+    mDescriptions.add(index, calcDescription(obj));
+    mObjects.add(index, obj);
+  }  
+  
+  public void addObjects(List<O> objs) {
+    // calculate description
+    int size = objs.size();
+    for (int i = 0; i < size; i++) {
+      addObject(objs.get(i));
     }
-    return objs;
+  }
+  
+  public boolean removeObject(O obj) {
+    // update cache
+    mDescriptions.remove(mObjects.indexOf(obj));
+    return mObjects.remove(obj);
+  }
+  
+  public O removeObject(int index) {
+    // update cache
+    mDescriptions.remove(index);
+    return mObjects.remove(index);
   }
   
   /**
-   * Returns a list of all the regions of the system.
-   * @return a list of all the regions of the system
+   * Returns a List containing the probe functions of the system.
+   * @return a List containing the probe functions of the system
    */
-  public List<Set<O>> getRegions() {
-    List<Set<O>> list = new ArrayList<Set<O>>();
-    list.addAll(mRegions);
-    return list;
-  }
-  
-  /**
-   * Creates a new region of interest using the given objects.
-   * @param objs
-   * @return the added region
-   */
-  public Set<O> addRegion(Set<O> objs) {
-    Set<O> region = new HashSet<O>(objs);
-    // cache object features
-    if (mCache) {
-      for (O o : region) {
-        // if the object has not yet been cached
-        if (!mObjectsMap.containsKey(o)) {
-          mObjectsMap.put(o, calcDescription(o));
-        }
-      }
-    }
-    mRegions.add(region);
-    return region;
-  }
-  
-  /**
-   * Removes the given region from the system.
-   * @param region
-   * @return true if the region was removed
-   */
-  public boolean removeRegion(Set<O> region) {
-    return mRegions.remove(region);
-  }
-  
-  /**
-   * Returns a set containing the probe functions of the system.
-   * @return a set containing the probe functions of the system
-   */
-  public Set<ProbeFunc<O>> getProbeFuncs() {
-    return new HashSet<ProbeFunc<O>>(mProbeFuncs);
+  public List<ProbeFunc<O>> getProbeFuncs() {
+    return new ArrayList<ProbeFunc<O>>(mProbeFuncs);
   }
   
   /**
@@ -500,11 +511,8 @@ public class PerceptualSystem<O> {
    */
   public void addProbeFunc(ProbeFunc<O> func) {
     // update cached features
-    if (mCache) {
-      for (O o : mObjectsMap.keySet()) {
-        Map<ProbeFunc<O>, Double> desc = mObjectsMap.get(o);
-        desc.put(func, func.apply(o));
-      }
+    for (int i = 0; i < mDescriptions.size(); i++) {
+      mDescriptions.get(i).add(func.apply(mObjects.get(i)));
     }
     mProbeFuncs.add(func);
   }
@@ -516,11 +524,9 @@ public class PerceptualSystem<O> {
    */
   public boolean removeProbeFunc(ProbeFunc<O> func) {
     // remove cached feature
-    if (mCache) {
-      for (O o : mObjectsMap.keySet()) {
-        Map<ProbeFunc<O>, Double> desc = mObjectsMap.get(o);
-        desc.remove(o);
-      }
+    int index = mProbeFuncs.indexOf(func);
+    for (int i = 0; i < mDescriptions.size(); i++) {
+      mDescriptions.get(i).remove(index);
     }
     return mProbeFuncs.remove(func);
   }
