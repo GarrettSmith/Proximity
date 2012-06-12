@@ -153,13 +153,25 @@ public class PerceptualSystem<O> {
    * @param epsilon the threshold objects must be under to be an element
    * @return the List of objects within the neighbourhood
    */
-  public List<O> getHybridNeighbourhood(O x, int[] indices, double epsilon) {
+  public List<O> getHybridNeighbourhood(int x, int[] indices, double epsilon) {
     List<Double> descX = getDescription(x);
     List<O> neighbourhood = new ArrayList<O>();
     for (int i = 0; i < indices.length; i++) {
       List<Double> descY = getDescription(indices[i]);
       if (distance(descX, descY) < epsilon) {
         neighbourhood.add(mObjects.get(indices[i]));
+      }
+    }
+    return neighbourhood;
+  }
+  
+  public List<Integer> getHybridNeighbourhoodIndices(int x, int[] indices, double epsilon) {
+    List<Double> descX = getDescription(x);
+    List<Integer> neighbourhood = new ArrayList<Integer>();
+    for (int i = 0; i < indices.length; i++) {
+      List<Double> descY = getDescription(indices[i]);
+      if (distance(descX, descY) < epsilon) {
+        neighbourhood.add(indices[i]);
       }
     }
     return neighbourhood;
@@ -268,8 +280,8 @@ public class PerceptualSystem<O> {
    * @param B the second region
    * @return a List all descriptions within the intersect of the two regions
    */
-  public Set<O> getDescriptionBasedIntersectObjects(int[] A, int[] B) {
-    Set<O> intersect = new HashSet<O>();
+  public List<O> getDescriptionBasedIntersectIndices(int[] A, int[] B) {
+    List<O> intersect = new ArrayList<O>(A.length + B.length);
     
     // get all the descriptions of objects in B only once
     List<List<Double>> descsB = new ArrayList<List<Double>>(B.length);
@@ -283,7 +295,7 @@ public class PerceptualSystem<O> {
         boolean added = false;
         if (equal(descA, descsB.get(j))) {
           if (!added) intersect.add(mObjects.get(A[i]));
-          intersect.add(mObjects.get(B[i]));
+          intersect.add(mObjects.get(B[j]));
           added = true;
         }
       }

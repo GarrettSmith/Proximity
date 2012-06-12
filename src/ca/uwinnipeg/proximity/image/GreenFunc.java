@@ -3,8 +3,8 @@ package ca.uwinnipeg.proximity.image;
 public class GreenFunc extends ColorFunc {
 
   @Override
-  protected double map(Pixel pxl) {
-    return (pxl.getColor() >> 8) & 0xFF;
+  protected double map(Integer pxl) {
+    return (pxl >> 8) & 0xFF;
   }
   
   @Override

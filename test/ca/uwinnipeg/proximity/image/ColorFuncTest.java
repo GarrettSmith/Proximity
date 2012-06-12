@@ -15,12 +15,12 @@ public class ColorFuncTest {
   
   private final Image IMAGE = new Image(new int[]{BLACK, WHITE, RED, GREEN,  BLUE, TRANS}, 2, 3);
   
-  private final Pixel BLACK_PIXEL = IMAGE.getPixel(0, 0);
-  private final Pixel WHITE_PIXEL = IMAGE.getPixel(1, 0);
-  private final Pixel RED_PIXEL   = IMAGE.getPixel(0, 1);
-  private final Pixel GREEN_PIXEL = IMAGE.getPixel(1, 1);
-  private final Pixel BLUE_PIXEL  = IMAGE.getPixel(0, 2);
-  private final Pixel TRANS_PIXEL = IMAGE.getPixel(1, 2);
+  private final int BLACK_PIXEL = IMAGE.getPixel(0, 0);
+  private final int WHITE_PIXEL = IMAGE.getPixel(1, 0);
+  private final int RED_PIXEL   = IMAGE.getPixel(0, 1);
+  private final int GREEN_PIXEL = IMAGE.getPixel(1, 1);
+  private final int BLUE_PIXEL  = IMAGE.getPixel(0, 2);
+  private final int TRANS_PIXEL = IMAGE.getPixel(1, 2);
 
   private AlphaFunc alphaFunc = new AlphaFunc();
   private RedFunc   redFunc   = new RedFunc();
