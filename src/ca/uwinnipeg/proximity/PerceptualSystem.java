@@ -25,9 +25,11 @@ public class PerceptualSystem<O> {
   // The list of probe functions
   protected List<ProbeFunc<O>> mProbeFuncs = new ArrayList<ProbeFunc<O>>();
   
+  protected boolean mCache = false;
+  
   /**
    * Creates an empty perceptual system.
-   * @param size
+   * @param mSize
    */
   public PerceptualSystem() {}
   
@@ -37,7 +39,7 @@ public class PerceptualSystem<O> {
    */
   public PerceptualSystem(int size) {
     mObjects = new ArrayList<O>(size);
-    mDescriptions = new ArrayList<List<Double>>(size);
+    if (mCache) mDescriptions = new ArrayList<List<Double>>(size);
   }
   
   /**
@@ -447,12 +449,22 @@ public class PerceptualSystem<O> {
    */
   public List<Double> getDescription(O obj) {
     // retrieve the description
-    return mDescriptions.get(mObjects.indexOf(obj));
+    if (mCache) {
+      return mDescriptions.get(mObjects.indexOf(obj));
+    }
+    else {
+      return calcDescription(obj);
+    }
   }
   
   public List<Double> getDescription(int index) {
     // retrieve the description
-    return mDescriptions.get(index);
+    if (mCache) {
+      return mDescriptions.get(index);
+    }
+    else {
+      return calcDescription(mObjects.get(index));
+    }
   }
 
   /**
@@ -479,13 +491,17 @@ public class PerceptualSystem<O> {
   
   public void addObject(O obj) {
     // calculate description
-    mDescriptions.add(calcDescription(obj));
+    if (mCache) {
+      mDescriptions.add(calcDescription(obj));
+    }
     mObjects.add(obj);
   }
   
   public void addObject(int index, O obj) {
     // calculate description
-    mDescriptions.add(index, calcDescription(obj));
+    if (mCache) {
+      mDescriptions.add(index, calcDescription(obj));
+    }
     mObjects.add(index, obj);
   }  
   
@@ -499,14 +515,30 @@ public class PerceptualSystem<O> {
   
   public boolean removeObject(O obj) {
     // update cache
-    mDescriptions.remove(mObjects.indexOf(obj));
+    if (mCache) {
+      mDescriptions.remove(mObjects.indexOf(obj));
+    }
     return mObjects.remove(obj);
   }
   
   public O removeObject(int index) {
     // update cache
-    mDescriptions.remove(index);
+    if (mCache) {
+      mDescriptions.remove(index);
+    }
     return mObjects.remove(index);
+  }
+  
+  public void clearObjects() {
+    if (mCache) {
+      mDescriptions.clear();
+    }
+    mObjects.clear();
+  }
+  
+  public void setObjects(List<O> objs) {
+    clearObjects();
+    addObjects(objs);
   }
   
   /**
@@ -516,15 +548,17 @@ public class PerceptualSystem<O> {
   public List<ProbeFunc<O>> getProbeFuncs() {
     return new ArrayList<ProbeFunc<O>>(mProbeFuncs);
   }
-  
+
   /**
    * Adds a probe function.
    * @param func
    */
   public void addProbeFunc(ProbeFunc<O> func) {
     // update cached features
-    for (int i = 0; i < mDescriptions.size(); i++) {
-      mDescriptions.get(i).add(func.apply(mObjects.get(i)));
+    if (mCache) {
+      for (int i = 0; i < mDescriptions.size(); i++) {
+        mDescriptions.get(i).add(func.apply(mObjects.get(i)));
+      }
     }
     mProbeFuncs.add(func);
   }
@@ -536,9 +570,11 @@ public class PerceptualSystem<O> {
    */
   public boolean removeProbeFunc(ProbeFunc<O> func) {
     // remove cached feature
-    int index = mProbeFuncs.indexOf(func);
-    for (int i = 0; i < mDescriptions.size(); i++) {
-      mDescriptions.get(i).remove(index);
+    if (mCache) {
+      int index = mProbeFuncs.indexOf(func);
+      for (int i = 0; i < mDescriptions.size(); i++) {
+        mDescriptions.get(i).remove(index);
+      }
     }
     return mProbeFuncs.remove(func);
   }

@@ -10,38 +10,66 @@ import ca.uwinnipeg.proximity.PerceptualSystem;
  * @author Garrett Smith
  *
  */
+// TODO: throw exceptions for methods that add outside of image bounds
 public class Image extends PerceptualSystem<Integer> {
   
-  public final int width, height;
-  public final int size;
+  protected int mWidth, mHeight, mSize;
+  
+  public Image() {
+    super();
+  }
   
   public Image(int[] pixels, int width, int height) {
     super(width * height);
     
-    this.width = width;
-    this.height = height;
-    size = pixels.length;
+    this.mWidth = width;
+    this.mHeight = height;
+    mSize = pixels.length;
 
-    for (int i = 0; i < size; i++) {
+    for (int i = 0; i < mSize; i++) {
       addObject(pixels[i]);
     }
   }
+  
+  public void set(int[] pixels, int width, int height) {
+    clearObjects();
+    
+    this.mWidth = width;
+    this.mHeight = height;
+    mSize = pixels.length;
+
+    for (int i = 0; i < mSize; i++) {
+      addObject(pixels[i]);
+    }
+  }
+  
+  public int getWidth() {
+    return mWidth;
+  }
+  
+  public int getHeight() {
+    return mHeight;
+  }
+  
+  public int getSize() {
+    return mSize;
+  }
 
   public int getPixel(int x, int y) {
-    return mObjects.get(y * width + x);
+    return mObjects.get(y * mWidth + x);
   }
   
 
   public int getIndex(int x, int y) {
-    return y * width + x;
+    return y * mWidth + x;
   }
   
   public int getX(int index) {
-    return index % width;
+    return index % mWidth;
   }
   
   public int getY(int index) {
-    return index / width;
+    return index / mWidth;
   }
   
   public int[] getPixels(int left, int top, int right, int bottom) {
@@ -49,8 +77,8 @@ public class Image extends PerceptualSystem<Integer> {
     int h = (bottom - top);
     int s = w * h;
     int[] pxls = new int[s];
-    for (int i = 0; i < size; i++) {
-      pxls[i] = mObjects.get((top + (i / w)) * width + (left + (i % w)));
+    for (int i = 0; i < mSize; i++) {
+      pxls[i] = mObjects.get((top + (i / w)) * mWidth + (left + (i % w)));
     }
     return pxls;
   }
@@ -61,7 +89,7 @@ public class Image extends PerceptualSystem<Integer> {
     int s = w * h;
     int[] indices = new int[s];
     for (int i = 0; i < s; i++) {
-      indices[i] = (top + (i / w)) * width + (left + (i % w));
+      indices[i] = (top + (i / w)) * mWidth + (left + (i % w));
     }
     return indices;
   }
