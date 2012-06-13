@@ -282,8 +282,8 @@ public class PerceptualSystem<O> {
    * @param B the second region
    * @return a List all descriptions within the intersect of the two regions
    */
-  public List<O> getDescriptionBasedIntersectIndices(int[] A, int[] B) {
-    List<O> intersect = new ArrayList<O>(A.length + B.length);
+  public List<Integer> getDescriptionBasedIntersectIndices(int[] A, int[] B) {
+    List<Integer> intersect = new ArrayList<Integer>(A.length + B.length);
     
     // get all the descriptions of objects in B only once
     List<List<Double>> descsB = new ArrayList<List<Double>>(B.length);
@@ -296,8 +296,8 @@ public class PerceptualSystem<O> {
       for (int j = 0; j < B.length; j++) {
         boolean added = false;
         if (equal(descA, descsB.get(j))) {
-          if (!added) intersect.add(mObjects.get(A[i]));
-          intersect.add(mObjects.get(B[j]));
+          if (!added) intersect.add(A[i]);
+          intersect.add(B[j]);
           added = true;
         }
       }

@@ -12,13 +12,7 @@ import ca.uwinnipeg.proximity.ProbeFunc;
  */
 public abstract class ColorFunc extends ProbeFunc<Integer> {
 
-  @Override
-  protected double maximum() {
-    return 255;
-  }
-
-  @Override
-  protected double minimum() {
-    return 0;
+  public ColorFunc() {
+    super(0, 255);
   }
 }

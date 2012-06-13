@@ -8,25 +8,27 @@ package ca.uwinnipeg.proximity;
  */
 public abstract class ProbeFunc<T> {
   
+  public final double MAXIMUM;
+  public final double MINIMUM;
+  
   /**
    * Maps a perceptual object to a real value representing a feature.
    * This value must return a double between minimum() and maximum() or it will be constrained.
    * @param t the perceptual object.
    * @return the real value representing the feature between minimum() and maximum().
    */
-  protected abstract double map(T t);
+  protected abstract double map(T t);  
+
   
   /**
-   * Returns the largest non-normalised value of this feature.
-   * @return
+   * Creates a new probe function that maps perceptual objects within the given range.
+   * @param min
+   * @param max
    */
-  protected abstract double maximum();
-  
-  /**
-   * Returns the smallest non-normalised value of this feature.
-   * @return
-   */
-  protected abstract double minimum();
+  public ProbeFunc(double min, double max) {
+    MAXIMUM = max;
+    MINIMUM = min;
+  }
   
   /**
    * Maps a perceptual object to a normalised real value representing a feature.
@@ -35,14 +37,15 @@ public abstract class ProbeFunc<T> {
    */
   public double apply(T t) {
     double result = map(t);
-    double max = maximum();
-    double min = minimum();
+    //double max = maximum();
+    //double min = minimum();
     
-    // constrain to limits
-    result = Math.min(max, result);
-    result = Math.max(min, result);
+    // constrain to limits, this is no longer done to save time
+    // Please make sure your values are within the limits
+    //result = Math.min(max, result);
+    //result = Math.max(min, result);
     
     // normalise
-    return (result - min) / (max - min);
+    return (result - MINIMUM) / (MAXIMUM - MINIMUM);
   }
 }
