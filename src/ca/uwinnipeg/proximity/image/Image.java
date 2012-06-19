@@ -20,26 +20,18 @@ public class Image extends PerceptualSystem<Integer> {
   }
   
   public Image(int[] pixels, int width, int height) {
-    super(width * height);
-    
-    this.mWidth = width;
-    this.mHeight = height;
-    mSize = pixels.length;
-
-    for (int i = 0; i < mSize; i++) {
-      addObject(pixels[i]);
-    }
+    super(width * height);    
+    set(pixels, width, height);
   }
   
-  public void set(int[] pixels, int width, int height) {
-    clearObjects();
-    
+  public void set(int[] pixels, int width, int height) {    
     this.mWidth = width;
     this.mHeight = height;
     mSize = pixels.length;
 
-    for (int i = 0; i < mSize; i++) {
-      addObject(pixels[i]);
+    mObjects = new Integer[mSize];
+    for (int i = 0; i < pixels.length; i++) {
+      mObjects[i] = pixels[i];
     }
   }
   
@@ -56,7 +48,7 @@ public class Image extends PerceptualSystem<Integer> {
   }
 
   public int getPixel(int x, int y) {
-    return mObjects.get(y * mWidth + x);
+    return mObjects[y * mWidth + x];
   }
   
 
@@ -78,7 +70,7 @@ public class Image extends PerceptualSystem<Integer> {
     int s = w * h;
     int[] pxls = new int[s];
     for (int i = 0; i < mSize; i++) {
-      pxls[i] = mObjects.get((top + (i / w)) * mWidth + (left + (i % w)));
+      pxls[i] = mObjects[(top + (i / w)) * mWidth + (left + (i % w))];
     }
     return pxls;
   }
