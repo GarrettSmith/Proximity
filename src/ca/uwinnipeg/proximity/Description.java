@@ -50,7 +50,7 @@ public class Description {
     return Math.sqrt(distance(other));
   }
   
-  public double quickDistance(Description other) {
+  public double squaredDistance(Description other) {
     double sum = 0;
     for (int i = 0; i < mValues.length; i++) {
       double tmp = mValues[i] - other.mValues[i];

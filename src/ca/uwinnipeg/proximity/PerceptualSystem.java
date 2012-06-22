@@ -14,6 +14,7 @@ import java.util.Map;
  * @author Garrett Smith
  *
  */
+//TODO: reimplement methods
 public class PerceptualSystem<O> {
   
   // The perceptual objects within the system
@@ -84,7 +85,7 @@ public class PerceptualSystem<O> {
   }
   
   public double quickDistance(O x, O y) {
-    return getDescription(x).quickDistance(getDescription(y));
+    return getDescription(x).squaredDistance(getDescription(y));
   }
   
   /**
@@ -177,7 +178,7 @@ public class PerceptualSystem<O> {
       
       Description descY = getDescription(indices.get(i));
       
-      if (descX.quickDistance(descY) < e2) {
+      if (descX.squaredDistance(descY) < e2) {
         neighbourhood.add(indices.get(i));
       }
       
@@ -321,8 +322,11 @@ public class PerceptualSystem<O> {
   public List<Integer> getDescriptionBasedIntersectIndices(List<Integer> A, List<Integer> B, 
       PerceptualSystemSubscriber sub) {
     
+    if (sub.isCancelled()) return null;
     Map<Description, List<Integer>> descsA = mapIndicesList(A);
     sub.onProgressSet(0.3f);
+    
+    if (sub.isCancelled()) return null;
     Map<Description, List<Integer>> descsB = mapIndicesList(B);
     sub.onProgressSet(0.6f);
     
@@ -330,6 +334,7 @@ public class PerceptualSystem<O> {
     float size = descsA.size();
     List<Integer> rtn = new ArrayList<Integer>();
     for (Description descA : descsA.keySet()) {
+      if (sub.isCancelled()) return null;
       i++;
       List<Integer> indicesB = descsB.get(descA);
       if (indicesB != null) {
@@ -461,8 +466,11 @@ public class PerceptualSystem<O> {
     
     // check if we really want a description based intersect, ie. epsilon = 0, this is much faster
     if (epsilon == 0) return getDescriptionBasedIntersectIndices(A, B, sub);
-    
+
+    if (sub.isCancelled()) return null;
     Map<Description, List<Integer>> descsMapA = mapIndicesList(A);
+    
+    if (sub.isCancelled()) return null;
     Map<Description, List<Integer>> descsMapB = mapIndicesList(B);
     
     Description[] descsA = new Description[descsMapA.size()];
@@ -478,12 +486,14 @@ public class PerceptualSystem<O> {
     Arrays.fill(matchesB, false);
     
     for (int i = 0; i < descsA.length; i++) {
+      
+      if (sub.isCancelled()) return null;
       Description descA = descsA[i];
       boolean matched = false;
       for (int j = 0; j < descsB.length; j++) {
         if (!matched && !matchesB[j]) {
           Description descB = descsB[j];
-          if (descA.quickDistance(descB) < e2) {
+          if (descA.squaredDistance(descB) < e2) {
             matchesB[j] = true;
             matched = true;
           }
@@ -496,25 +506,6 @@ public class PerceptualSystem<O> {
     getIndices(matchesA, descsA, descsMapA, rtn);
     getIndices(matchesB, descsB, descsMapB, rtn);
     return rtn;
-  }
-  
-  private Map<Description, Boolean> createMatchMap(Map<Description, ?> source) {
-    Map<Description, Boolean> map = new HashMap<Description, Boolean>(source.size());
-    for (Description d : source.keySet()) {
-      map.put(d, false);
-    }
-    return map;
-  }
-  
-  private void getIndices(
-      Map<Description, Boolean> matchMap, 
-      Map<Description, List<Integer>> descMap,
-      List<Integer> dest) {
-    for (Description d : matchMap.keySet()) {
-      if (matchMap.get(d)) {
-        dest.addAll(descMap.get(d));
-      }
-    }
   }
   
   private void getIndices(
