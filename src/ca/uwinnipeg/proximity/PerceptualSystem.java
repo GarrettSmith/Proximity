@@ -6,8 +6,10 @@ package ca.uwinnipeg.proximity;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * A perceptual system consists of a List of perceptual objects and and a List of {@link ProbeFunc}.
@@ -338,8 +340,11 @@ public class PerceptualSystem<O> {
       i++;
       List<Integer> indicesB = descsB.get(descA);
       if (indicesB != null) {
-        rtn.addAll(descsA.get(descA));
-        rtn.addAll(indicesB);
+        // put all the items in a set to trim duplicates
+        Set<Integer> set = new HashSet<Integer>();
+        set.addAll(descsA.get(descA));
+        set.addAll(indicesB);
+        rtn.addAll(set);
       }
       sub.onProgressSet(0.6f + (0.4f * (i/size)));
     }
@@ -461,6 +466,7 @@ public class PerceptualSystem<O> {
 //    return intersect;
 //  }
   
+  // TODO: sort descriptions
   public List<Integer> getHybridIntersectIndices(List<Integer> A, List<Integer> B, double epsilon,
       PerceptualSystemSubscriber sub) {
     
@@ -502,17 +508,17 @@ public class PerceptualSystem<O> {
       if (matched) matchesA[i] = true;
       sub.onProgressSet(i / (float)descsA.length);
     }
-    List<Integer> rtn = new ArrayList<Integer>();
+    Set<Integer> rtn = new HashSet<Integer>();
     getIndices(matchesA, descsA, descsMapA, rtn);
     getIndices(matchesB, descsB, descsMapB, rtn);
-    return rtn;
+    return new ArrayList<Integer>(rtn);
   }
   
   private void getIndices(
       boolean[] matches, 
       Description[] descs,
       Map<Description, List<Integer>> descMap,
-      List<Integer> dest) {
+      Set<Integer> dest) {
     // for each description
     for (int i = 0; i < descs.length; i++) {
       // if it was matched
