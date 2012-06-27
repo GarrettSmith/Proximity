@@ -635,6 +635,15 @@ public class PerceptualSystem<O> {
     return Arrays.copyOf(mObjects, mObjects.length);
   }
   
+  /**
+   * Returns the object at the given index
+   * @param index
+   * @return
+   */
+  public O getObject(int index) {
+    return mObjects[index];
+  }
+  
 //  public void addObject(O obj) {
 //    // calculate description
 //    if (mCache) {
