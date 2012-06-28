@@ -529,6 +529,42 @@ public class PerceptualSystem<O> {
   }
   
   /**
+   * Gives the descriptive compliment of the given region.
+   * @param region
+   * @return
+   */
+  public List<Integer> getDescriptiveComplimentIndices(
+      List<Integer> region, 
+      PerceptualSystemSubscriber sub) {
+    List<Description> regionDescs = getIndicesDescriptions(region);
+    sub.onProgressSet(0.25f);
+    
+    if (sub.isCancelled()) return null;    
+    Map<Description, List<Integer>> compliment = mapObjects(); 
+    sub.onProgressSet(0.5f);
+    
+    int size = regionDescs.size();
+    
+    // remove all descriptions that are in the region
+    for (int i = 0; i < size; i++) {
+      if (sub.isCancelled()) return null;
+      
+      Description d = regionDescs.get(i);
+      List<Integer> l = compliment.get(d);
+      l.clear();
+      
+      sub.onProgressSet(0.5f + (0.5f * i/size));
+    }
+    
+    // get all the remaining objects
+    List<Integer> rtn = new ArrayList<Integer>();
+    for (List<Integer> l : compliment.values()) {
+      rtn.addAll(l);
+    }
+    return rtn;
+  }
+  
+  /**
    * Checks whether two regions are near using their hybrid intersection.
    * @param A the first region
    * @param B the second region
@@ -616,15 +652,37 @@ public class PerceptualSystem<O> {
       List<O> list = map.get(desc); // get the corresponding list
       if (list == null) {
         list = new ArrayList<O>(); // create the list if this is the first one
-        list.add(o);
         map.put(desc, list);
       }
-      else {
-        list.add(o);
-      }
+      list.add(o);
     }
 
     return map;
+  }
+  
+  private Map<Description, List<Integer>> mapObjects() {
+    Map<Description, List<Integer>> map = new HashMap<Description, List<Integer>>();
+
+    for (int i = 0; i < mObjects.length; i++) {
+      Description desc = getDescription(i);
+      List<Integer> list = map.get(desc); // get the corresponding list
+      if (list == null) {
+        list = new ArrayList<Integer>(); // create the list if this is the first one
+        map.put(desc, list);
+      }
+      list.add(i);
+    }
+
+    return map;
+  }
+  
+  private List<Description> getIndicesDescriptions(List<Integer> indices) {
+    Set<Description> descs = new HashSet<Description>();
+    for (Integer i : indices) {
+      Description desc = getDescription(i);
+      descs.add(desc);
+    }
+    return new ArrayList<Description>(descs);
   }
 
   /**
