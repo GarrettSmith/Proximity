@@ -67,41 +67,17 @@ public class PerceptualSystem<O> {
   }
   
   /**
-   * Determines if two perceptual objects are equal.
-   * @param x
-   * @param y
-   * @return true if the two objects have the same features, false otherwise
-   */
-  public boolean equal(O x, O y) { 
-    return getDescription(x).equals(getDescription(y));
-  }
-
-  /**
-   * Calculates the distance between the given objects in feature space.
-   * @param x
-   * @param y
-   * @return the distance between the given objects in feature space
-   */
-  public double distance(O x, O y) {
-    return getDescription(x).distance(getDescription(y));
-  }
-  
-  public double quickDistance(O x, O y) {
-    return getDescription(x).squaredDistance(getDescription(y));
-  }
-  
-  /**
    * Returns a description-based neighbourhood.
    * @param x the object to compare against
    * @param objs the List of all objects being compared
    * @return the List of objects within the neighbourhood
    */
-  public List<O> getDescriptionBasedNeighbourhood(O x, List<O> region) {
+  public List<O> neighbourhood(O x, List<O> region) {
     Description descX = getDescription(x);
     return mapObjectsList(region).get(descX);
   }
   
-  public List<Integer> getDescriptionBasedNeighbourhoodIndices(int x, List<Integer> region, 
+  public List<Integer> neighbourhood(int x, List<Integer> region, 
       PerceptualSystemSubscriber sub) {
     Description descX = getDescription(x);
     return mapIndicesList(region).get(descX);
@@ -160,10 +136,10 @@ public class PerceptualSystem<O> {
 //    return neighbourhood;
 //  }
   
-  public List<Integer> getHybridNeighbourhoodIndices(int x, List<Integer> indices, double epsilon, 
+  public List<Integer> hybridNeighbourhood(int x, List<Integer> indices, double epsilon, 
       PerceptualSystemSubscriber sub) {
     
-    if (epsilon == 0) return getDescriptionBasedNeighbourhoodIndices(x, indices, sub);
+    if (epsilon == 0) return neighbourhood(x, indices, sub);
     
     // check if we should stop
     if (sub.isCancelled()) return null;
@@ -321,7 +297,7 @@ public class PerceptualSystem<O> {
 //    return intersect;
 //  }
   
-  public List<Integer> getDescriptionBasedIntersectIndices(List<Integer> A, List<Integer> B, 
+  public List<Integer> intersection(List<Integer> A, List<Integer> B, 
       PerceptualSystemSubscriber sub) {
     
     if (sub.isCancelled()) return null;
@@ -467,11 +443,11 @@ public class PerceptualSystem<O> {
 //  }
   
   // TODO: sort descriptions
-  public List<Integer> getHybridIntersectIndices(List<Integer> A, List<Integer> B, double epsilon,
+  public List<Integer> hybridIntersection(List<Integer> A, List<Integer> B, double epsilon,
       PerceptualSystemSubscriber sub) {
     
     // check if we really want a description based intersect, ie. epsilon = 0, this is much faster
-    if (epsilon == 0) return getDescriptionBasedIntersectIndices(A, B, sub);
+    if (epsilon == 0) return intersection(A, B, sub);
 
     if (sub.isCancelled()) return null;
     Map<Description, List<Integer>> descsMapA = mapIndicesList(A);
@@ -529,18 +505,19 @@ public class PerceptualSystem<O> {
   }
   
   /**
-   * Gives the descriptive compliment of the given region.
+   * Returns the difference of region B from region A.
    * @param region
    * @return
    */
-  public List<Integer> getDescriptiveComplimentIndices(
-      List<Integer> region, 
+  public List<Integer> difference(
+      List<Integer> A, 
+      List<Integer> B, 
       PerceptualSystemSubscriber sub) {
-    List<Description> regionDescs = getIndicesDescriptions(region);
+    List<Description> regionDescs = getIndicesDescriptions(B);
     sub.onProgressSet(0.25f);
     
     if (sub.isCancelled()) return null;    
-    Map<Description, List<Integer>> compliment = mapObjects(); 
+    Map<Description, List<Integer>> compliment = mapIndicesList(A); 
     sub.onProgressSet(0.5f);
     
     int size = regionDescs.size();
@@ -562,6 +539,72 @@ public class PerceptualSystem<O> {
       rtn.addAll(l);
     }
     return rtn;
+  }
+
+  public List<Integer> hybridDifference(
+      List<Integer> A, 
+      List<Integer> B, 
+      double epsilon,
+      PerceptualSystemSubscriber sub) {
+    
+    // check if we really want a description based intersect, ie. epsilon = 0, this is much faster
+    if (epsilon == 0) return difference(A, B, sub);
+    
+    Map<Description, List<Integer>> descsMapA = mapIndicesList(A);
+
+    Description[] descsA = new Description[descsMapA.size()];
+    descsMapA.keySet().toArray(descsA);
+    
+    List<Description> descsB = getIndicesDescriptions(B);
+
+    double e2 = epsilon * epsilon;
+    
+    for (int i = 0; i < descsA.length; i++) {
+
+      if (sub.isCancelled()) return null;
+      Description descA = descsA[i];
+      for (int j = 0; j < descsB.size(); j++) {
+        Description descB = descsB.get(j);
+        if (descA.squaredDistance(descB) < e2) {
+          descsMapA.remove(descA);
+          break;
+        }
+      }
+      sub.onProgressSet(i / (float)descsA.length);
+    }
+
+    // get all the remaining objects
+    List<Integer> rtn = new ArrayList<Integer>();
+    for (List<Integer> l : descsMapA.values()) {
+      rtn.addAll(l);
+    }
+    return rtn;
+  }
+  
+  /**
+   * Gives the descriptive compliment of the given region and the universe.
+   * @param region
+   * @return
+   */
+  public List<Integer> compliment(
+      List<Integer> region, 
+      PerceptualSystemSubscriber sub) {
+    return difference(objectsIndicesList(), region, sub);
+  }
+  
+  public List<Integer> hybridCompliment(
+      List<Integer> region, 
+      double epsilon,
+      PerceptualSystemSubscriber sub) {
+    return hybridDifference(objectsIndicesList(), region, epsilon, sub);
+  }
+  
+  public List<Integer> objectsIndicesList() {
+    List<Integer> indices = new ArrayList<Integer>(mObjects.length);
+    for (int i = 0; i < mObjects.length; i++) {
+      indices.add(i);
+    }
+    return indices;
   }
   
   /**
@@ -677,6 +720,15 @@ public class PerceptualSystem<O> {
   }
   
   private List<Description> getIndicesDescriptions(List<Integer> indices) {
+    Set<Description> descs = new HashSet<Description>();
+    for (Integer i : indices) {
+      Description desc = getDescription(i);
+      descs.add(desc);
+    }
+    return new ArrayList<Description>(descs);
+  }
+  
+  private List<Description> getIndicesDescriptions(Integer[] indices) {
     Set<Description> descs = new HashSet<Description>();
     for (Integer i : indices) {
       Description desc = getDescription(i);
