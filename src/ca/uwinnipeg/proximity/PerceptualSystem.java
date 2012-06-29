@@ -527,8 +527,7 @@ public class PerceptualSystem<O> {
       if (sub.isCancelled()) return null;
       
       Description d = regionDescs.get(i);
-      List<Integer> l = compliment.get(d);
-      l.clear();
+      compliment.remove(d);
       
       sub.onProgressSet(0.5f + (0.5f * i/size));
     }
