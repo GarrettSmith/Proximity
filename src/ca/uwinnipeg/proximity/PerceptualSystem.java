@@ -558,18 +558,25 @@ public class PerceptualSystem<O> {
 
     double e2 = epsilon * epsilon;
     
-    for (int i = 0; i < descsA.length; i++) {
+    int sizeB = descsB.size();
+    
+    for (int i = 0; i < sizeB; i++) {
 
-      if (sub.isCancelled()) return null;
-      Description descA = descsA[i];
-      for (int j = 0; j < descsB.size(); j++) {
-        Description descB = descsB.get(j);
-        if (descA.squaredDistance(descB) < e2) {
+      // check if we were cancelled and should return
+      if (sub.isCancelled()) return null;      
+      
+      Description descB = descsB.get(i);
+      
+      for (int j = 0; j < descsA.length; j++) {
+        Description descA = descsA[j];
+        if (descA != null && descA.squaredDistance(descB) < e2) {
           descsMapA.remove(descA);
-          break;
+          descsA[j] = null;
         }
       }
-      sub.onProgressSet(i / (float)descsA.length);
+      
+      // update the progress
+      sub.onProgressSet(i / (float)sizeB);
     }
 
     // get all the remaining objects
@@ -579,7 +586,7 @@ public class PerceptualSystem<O> {
     }
     return rtn;
   }
-  
+
   /**
    * Gives the descriptive compliment of the given region and the universe.
    * @param region
