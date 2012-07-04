@@ -16,7 +16,6 @@ import java.util.Set;
  * @author Garrett Smith
  *
  */
-//TODO: reimplement methods
 public class PerceptualSystem<O> {
   
   // The perceptual objects within the system
@@ -82,59 +81,6 @@ public class PerceptualSystem<O> {
     Description descX = getDescription(x);
     return mapIndicesList(region).get(descX);
   }
-
-  /**
-   * Returns a hybrid neighbourhood.
-   * @param x the object to compare against
-   * @param region the List of all objects being compared
-   * @param epsilon the threshold objects must be under to be an element
-   * @return the List of objects within the neighbourhood
-   */
-//  public List<O> getHybridNeighbourhood(O x, List<O> region, double epsilon) {
-//    if (epsilon == 0) return getDescriptionBasedNeighbourhood(x, region);
-//    Description descX = getDescription(x);
-//    List<O> neighbourhood = new ArrayList<O>();    
-//    int size = region.size();
-//    for (int i = 0; i < size; i++) {
-//      O y = region.get(i);
-//      double[] descY = getDescription(y);
-//      if (distance(descX, descY) < epsilon) {
-//        neighbourhood.add(y);
-//      }
-//    }
-//    return neighbourhood;
-//  }
-
-  /**
-   * Returns a hybrid neighbourhood.
-   * @param x the object to compare against
-   * @param region the List of all objects being compared
-   * @param epsilon the threshold objects must be under to be an element
-   * @return the List of objects within the neighbourhood
-   */
-//  public List<O> getHybridNeighbourhood(int x, int[] indices, double epsilon) {
-//    double[] descX = getDescription(x);
-//    List<O> neighbourhood = new ArrayList<O>();
-//    for (int i = 0; i < indices.length; i++) {
-//      double[] descY = getDescription(indices[i]);
-//      if (distance(descX, descY) < epsilon) {
-//        neighbourhood.add(mObjects[indices[i]]);
-//      }
-//    }
-//    return neighbourhood;
-//  }
-  
-//  public List<Integer> getHybridNeighbourhoodIndices(int x, int[] indices, double epsilon) {
-//    double[] descX = getDescription(x);
-//    List<Integer> neighbourhood = new ArrayList<Integer>();
-//    for (int i = 0; i < indices.length; i++) {
-//      double[] descY = getDescription(indices[i]);
-//      if (distance(descX, descY) < epsilon) {
-//        neighbourhood.add(indices[i]);
-//      }
-//    }
-//    return neighbourhood;
-//  }
   
   public List<Integer> hybridNeighbourhood(int x, List<Integer> indices, double epsilon, 
       PerceptualSystemSubscriber sub) {
@@ -166,137 +112,6 @@ public class PerceptualSystem<O> {
     return neighbourhood;
   }
 
-//  public List<Description> getDescriptionUnion(List<O> A, List<O> B) {
-//    // get union of objects
-//    List<O> objectUnion = new ArrayList<O>(A);
-//    objectUnion.addAll(B);
-//    
-//    // get the description of each object
-//    List<double[]> union = new ArrayList<double[]>();
-//    for (O o : objectUnion) { 
-//      union.add(getDescription(o));
-//    }
-//    
-//    return ;
-//  }
-
-  /**
-   * Returns the description-based intersection of a list of regions.
-   * @param regions the list of regions
-   * @return a List all descriptions within the intersect of the two regions
-   */
-//  public List<double[]> getDescriptionBasedIntersect(List<List<O>> regions) {
-//    // calculate the objects in the intersect of the first two regions
-//    List<double[]> intersect = 
-//        new ArrayList<double[]>(
-//            getDescriptionBasedIntersect(regions.get(0), regions.get(1)));
-//
-//    // calculate the intersect of the current intersect and the next region
-//    for (int i = 2; i < regions.size(); i++) {
-//      List<O> region = regions.get(i);
-//      List<double[]> newIntersect = new ArrayList<double[]>();
-//
-//      for (O a : region) {
-//        double[] descA = getDescription(a);
-//        for (double[] descB : intersect) {
-//          if (equal(descA, descB)) {
-//            // If a match was found add to intersect and stop comparing to this object
-//            newIntersect.add(descA);
-//            break;
-//          }
-//        }
-//      }
-//
-//        intersect = newIntersect;
-//      }
-//
-//      return intersect;
-//    }
-
-    /**
-   * Returns the description-based intersection of two regions.
-   * @param A the first region
-   * @param B the second region
-   * @return a List all descriptions within the intersect of the two regions
-   */
-//  public List<double[]> getDescriptionBasedIntersect(List<O> A, List<O> B) {
-//    List<double[]> intersect = new ArrayList<double[]>();
-//    for (O a : A) {
-//      for (O b : B) {
-//        if (equal(a, b)) {
-//          // If a match was found add to intersect and stop comparing to this object
-//          intersect.add(getDescription(a));
-//          break;
-//        }
-//      }
-//    }
-//    return intersect;
-//  }
-  
-  /**
-   * Returns the objects with descriptions within the description-based intersection of two regions.
-   * @param A the first region
-   * @param B the second region
-   * @return a List all descriptions within the intersect of the two regions
-   */
-//  public Set<O> getDescriptionBasedIntersectObjects(List<O> A, List<O> B) {
-//    Set<O> intersect = new HashSet<O>();
-//    int sizeA = A.size();
-//    int sizeB = B.size();
-//    
-//    // get all the descriptions of objects in B only once
-//    List<double[]> descsB = new ArrayList<double[]>(sizeB);
-//    for (int i = 0; i < sizeB; i++) {
-//      descsB.add(i, getDescription(B.get(i)));
-//    }
-//    
-//    for (int i = 0; i < sizeA; i++) {
-//      O a = A.get(i);
-//      double[] descA = getDescription(a);
-//      for (int j = 0; j < sizeB; j++) {
-//        if (equal(descA, descsB.get(j))) {  
-//          intersect.add(a);
-//          intersect.add(B.get(j));
-//        }
-//      }
-//    }
-//    return intersect;
-//  }
-  
-  /**
-   * Returns the objects with descriptions within the description-based intersection of two regions.
-   * @param A the first region
-   * @param B the second region
-   * @return a List all descriptions within the intersect of the two regions
-   */
-//  public List<Integer> getDescriptionBasedIntersectIndices(List<Integer> A, List<Integer> B) {
-//    int sizeA = A.size();
-//    int sizeB = B.size();
-//    
-//    List<Integer> intersect = new ArrayList<Integer>(sizeA + sizeB);
-//    
-//    // get all the descriptions of objects in B only once
-//    List<double[]> descsB = new ArrayList<double[]>(sizeB);
-//    for (int i = 0; i < sizeB; i++) {
-//      descsB.add(i, getDescription(B.get(i)));
-//    }
-//    
-//    for (int i = 0; i < sizeA; i++) {
-//      int a = A.get(i);
-//      double[] descA = getDescription(a);
-//      for (int j = 0; j < sizeB; j++) {
-//        boolean added = false;
-//        if (equal(descA, descsB.get(j))) {
-//          if (!added) intersect.add(a);
-//          int b = B.get(j);
-//          if (!intersect.contains(b)) intersect.add(b);
-//          added = true;
-//        }
-//      }
-//    }
-//    return intersect;
-//  }
-  
   public List<Integer> intersection(List<Integer> A, List<Integer> B, 
       PerceptualSystemSubscriber sub) {
     
@@ -326,121 +141,6 @@ public class PerceptualSystem<O> {
     }
     return rtn;
   }
-  
-  /**
-   * Checks whether two regions are near using their description-based intersection.
-   * @param A the first region
-   * @param B the second region
-   * @return true if their description-based intersect is non-empty
-   */
-//  public boolean descriptionBasedNear(List<O> A, List<O> B) {
-//    return descriptionBasedDegree(A, B) > 0;
-//  }
-  
-  /**
-   * Returns the degree using the description-based intersection.
-   * @param A the first region
-   * @param B the second region
-   * @return the degree of the description-based intersection
-   */
-//  public int descriptionBasedDegree(List<O> A, List<O> B) {
-//    return getDescriptionBasedIntersect(A, B).size();
-//  }
-  
-  
-  /**
-   * Returns the hybrid intersection of a list of regions.
-   * @param regions the list of regions
-   * @param epsilon the threshold distance between objects must be under to be an element
-   * @return a List all descriptions within the intersect of the two regions
-   */
-//  public List<double[]> getHybridIntersect(List<List<O>> regions, double epsilon) {
-//    // calculate the objects in the intersect of the first two regions
-//    List<double[]> intersect = 
-//        new ArrayList<double[]>(
-//            getDescriptionBasedIntersect(regions.get(0), regions.get(1)));
-//
-//    // calculate the intersect of the current intersect and the next region
-//    for (int i = 2; i < regions.size(); i++) {
-//      List<O> region = regions.get(i);
-//      List<double[]> newIntersect = new ArrayList<double[]>();
-//
-//      for (O a : region) {
-//        double[] descA = getDescription(a);
-//        for (double[] descB : intersect) {
-//          if (distance(descA, descB) < epsilon) {
-//            // If a match was found add to intersect and stop comparing to this object
-//            newIntersect.add(descA);
-//            break;
-//          }
-//        }
-//      }
-//
-//        intersect = newIntersect;
-//      }
-//
-//      return intersect;
-//    }
-  
-  /**
-   * Returns the hybrid intersection of two regions.
-   * @param A the first region
-   * @param B the second region
-   * @param epsilon the threshold distance between objects must be under to be an element
-   * @return a List all descriptions within the intersect of the two regions
-   */
-//  public List<double[]> getHybridIntersect(List<O> A, List<O> B, double epsilon) {
-//    List<double[]> intersect = new ArrayList<double[]>();
-//    for (O a : A) {
-//      for (O b : B) {
-//        if (distance(a, b) < epsilon) {
-//          // If a match was found add to intersect and stop comparing to this object
-//          intersect.add(getDescription(a));
-//          break;
-//        }
-//      }
-//    }
-//    return intersect;
-//  }
-  
-  /**
-   * Returns the objects with the descriptions within the hybrid intersection of a list of regions.
-   * @param regions the list of regions
-   * @param epsilon the threshold distance between objects must be under to be an element
-   * @return a List all descriptions within the intersect of the two regions
-   */
-//  public List<O> getHybridIntersectObjects(List<List<O>> regions, double epsilon) {
-//    // calculate the objects in the intersect of the first two regions
-//    List<O> intersect = 
-//        new ArrayList<O>(getHybridIntersectObjects(regions.get(0), regions.get(1), epsilon));
-//    
-//    // calculate the intersect of the current intersect and the next region
-//    for (int i = 2; i < regions.size(); i++) {
-//      intersect = getHybridIntersectObjects(intersect, regions.get(i), epsilon);
-//    }
-//    
-//    return intersect;
-//  }
-  
-  /**
-   * Returns the objects with the descriptions within the hybrid intersection of two regions.
-   * @param A the first region
-   * @param B the second region
-   * @param epsilon the threshold distance between objects must be under to be an element
-   * @return a List all descriptions within the intersect of the two regions
-   */
-//  public List<O> getHybridIntersectObjects(List<O> A, List<O> B, double epsilon) {
-//    List<O> intersect = new ArrayList<O>();
-//    for (O a : A) {
-//      for (O b : B) {
-//        if (distance(a, b) < epsilon) {
-//          intersect.add(a);
-//          intersect.add(b);
-//        }
-//      }
-//    }
-//    return intersect;
-//  }
   
   // TODO: sort descriptions
   public List<Integer> hybridIntersection(List<Integer> A, List<Integer> B, double epsilon,
@@ -614,28 +314,6 @@ public class PerceptualSystem<O> {
   }
   
   /**
-   * Checks whether two regions are near using their hybrid intersection.
-   * @param A the first region
-   * @param B the second region
-   * @param epsilon the threshold distance between objects must be under to be an element
-   * @return true if their hybrid intersect is non-empty
-   */
-//  public boolean hybridNear(List<O> A, List<O> B, double epsilon) {
-//    return hybridDegree(A, B, epsilon) > 0;
-//  }
-  
-  /**
-   * Returns the degree using the hybrid intersection.
-   * @param A the first region
-   * @param B the second region
-   * @param epsilon the threshold distance between objects must be under to be an element
-   * @return the degree of the hybrid intersection
-   */
-//  public int hybridDegree(List<O> A, List<O> B, double epsilon) {
-//    return getHybridIntersect(A, B, epsilon).size();
-//  }
-  
-  /**
    * Gets the description of a perceptual object by applying every probe function to the object.
    * @param obj the perceptual object
    * @return a map mapping each probe function to its applied value
@@ -709,32 +387,7 @@ public class PerceptualSystem<O> {
     return map;
   }
   
-  private Map<Description, List<Integer>> mapObjects() {
-    Map<Description, List<Integer>> map = new HashMap<Description, List<Integer>>();
-
-    for (int i = 0; i < mObjects.length; i++) {
-      Description desc = getDescription(i);
-      List<Integer> list = map.get(desc); // get the corresponding list
-      if (list == null) {
-        list = new ArrayList<Integer>(); // create the list if this is the first one
-        map.put(desc, list);
-      }
-      list.add(i);
-    }
-
-    return map;
-  }
-  
   private List<Description> getIndicesDescriptions(List<Integer> indices) {
-    Set<Description> descs = new HashSet<Description>();
-    for (Integer i : indices) {
-      Description desc = getDescription(i);
-      descs.add(desc);
-    }
-    return new ArrayList<Description>(descs);
-  }
-  
-  private List<Description> getIndicesDescriptions(Integer[] indices) {
     Set<Description> descs = new HashSet<Description>();
     for (Integer i : indices) {
       Description desc = getDescription(i);
@@ -760,37 +413,13 @@ public class PerceptualSystem<O> {
     return mObjects[index];
   }
   
-//  public void addObject(O obj) {
-//    // calculate description
-//    if (mCache) {
-//      mDescriptions.add(calcDescription(obj));
-//    }
-//    mObjects.add(obj);
-//  }
-  
   public void addObject(int index, O obj) {
     // calculate description
 //    if (mCache) {
 //      mDescriptions.add(index, calcDescription(obj));
 //    }
     mObjects[index] = obj;
-  }  
-  
-//  public void addObjects(List<O> objs) {
-//    // calculate description
-//    int size = objs.size();
-//    for (int i = 0; i < size; i++) {
-//      addObject(objs.get(i));
-//    }
-//  }
-  
-//  public boolean removeObject(O obj) {
-//    // update cache
-//    if (mCache) {
-//      mDescriptions.remove(mObjects.indexOf(obj));
-//    }
-//    return mObjects.remove(obj);
-//  }
+  }
   
   public O removeObject(int index) {
     // update cache
