@@ -479,4 +479,12 @@ public class PerceptualSystem<O> {
     mProbeFuncCount--;
     return mProbeFuncs.remove(func);
   }
+  
+  /**
+   * Returns the norm of the perceptual system.
+   * @return the largest possible distance between two objects.
+   */
+  public double getNorm() {
+    return Math.sqrt(mProbeFuncCount);
+  }
 }
