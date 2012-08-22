@@ -65,26 +65,42 @@ public class PerceptualSystem<O> {
     if (mCache) mDescriptions = new ArrayList<double[]>(size);
   }
   
+//  /**
+//   * Returns a description-based neighbourhood.
+//   * @param x the object to compare against
+//   * @param objs the List of all objects being compared
+//   * @return the List of objects within the neighbourhood
+//   */
+//  public List<O> neighbourhood(O x, List<O> region) {
+//    Description descX = getDescription(x);
+//    return mapObjectsList(region).get(descX);
+//  }
+  
   /**
    * Returns a description-based neighbourhood.
-   * @param x the object to compare against
-   * @param objs the List of all objects being compared
-   * @return the List of objects within the neighbourhood
+   * @param x the index of the object to compare to, the pivot object
+   * @param indices the list of indices of objects within the system to be considered
+   * @param sub the subscriber interested in the progress of execution
+   * @return the list of indices of objects within the neighbourhood
    */
-  public List<O> neighbourhood(O x, List<O> region) {
+  public List<Integer> neighbourhood(int x, List<Integer> indices, PerceptualSystemSubscriber sub) {
     Description descX = getDescription(x);
-    return mapObjectsList(region).get(descX);
+    Map<Description, List<Integer>> map = mapIndicesList(indices);
+    return map.get(descX);
   }
   
-  public List<Integer> neighbourhood(int x, List<Integer> region, 
-      PerceptualSystemSubscriber sub) {
-    Description descX = getDescription(x);
-    return mapIndicesList(region).get(descX);
-  }
-  
+  /**
+   * Returns a hybrid description-based neighbourhood calculated using an epsilon.
+   * @param x the index of the object to compare to, the pivot object
+   * @param indices the list of indices of objects within the system to be considered
+   * @param epsilon the epsilon used to calculate the property
+   * @param sub the subscriber interested in the progress of execution
+   * @return the list of indices of objects within the neighbourhood
+   */
   public List<Integer> hybridNeighbourhood(int x, List<Integer> indices, double epsilon, 
       PerceptualSystemSubscriber sub) {
     
+    // if epsilon is 0 use the faster non epsilon method
     if (epsilon == 0) return neighbourhood(x, indices, sub);
     
     // check if we should stop
@@ -102,6 +118,7 @@ public class PerceptualSystem<O> {
       
       Description descY = getDescription(indices.get(i));
       
+      // if the objects are within an epsilon of each other in feature space
       if (descX.squaredDistance(descY) < e2) {
         neighbourhood.add(indices.get(i));
       }
@@ -112,6 +129,14 @@ public class PerceptualSystem<O> {
     return neighbourhood;
   }
 
+  /**
+   * Returns the intersection of two lists of indices corresponding to perceptual objects in the 
+   * perceptual system.
+   * @param A the first list of perceptual objects
+   * @param B the second list of perceptual objects
+   * @param sub the subscriber interested in the progress of execution
+   * @return a list containing the indices of objects within the intersection
+   */
   public List<Integer> intersection(List<Integer> A, List<Integer> B, 
       PerceptualSystemSubscriber sub) {
     
@@ -142,7 +167,16 @@ public class PerceptualSystem<O> {
     return rtn;
   }
   
-  // TODO: sort descriptions
+  /**
+   * Returns the intersection of two lists of indices corresponding to perceptual objects in the 
+   * perceptual system using an epsilon.
+   * @param A the first list of perceptual objects
+   * @param B the second list of perceptual objects
+   * @param epsilon the epsilon used to calculate the property
+   * @param sub the subscriber interested in the progress of execution
+   * @return a list containing the indices of objects within the intersection
+   */
+  // TODO: try sorting descriptions
   public List<Integer> hybridIntersection(List<Integer> A, List<Integer> B, double epsilon,
       PerceptualSystemSubscriber sub) {
     
@@ -190,6 +224,14 @@ public class PerceptualSystem<O> {
     return new ArrayList<Integer>(rtn);
   }
   
+  /**
+   * Move the object indices of all objects whose descriptions map to a true value in the matches 
+   * map into the destination set.
+   * @param matches
+   * @param descs
+   * @param descMap
+   * @param dest
+   */
   private void getIndices(
       boolean[] matches, 
       Description[] descs,
@@ -203,11 +245,13 @@ public class PerceptualSystem<O> {
       }
     }
   }
-  
+
   /**
-   * Returns the difference of region B from region A.
-   * @param region
-   * @return
+   * Returns the difference of the second region from the first region.
+   * @param A the list of indices corresponding to perceptual objects to take the difference from
+   * @param B the list of indices corresponding to perceptual objects used to take the difference
+   * @param sub the subscriber interested in the progress of execution
+   * @return a list containing the indices of objects left after taking the difference
    */
   public List<Integer> difference(
       List<Integer> A, 
@@ -240,6 +284,14 @@ public class PerceptualSystem<O> {
     return rtn;
   }
 
+  /**
+   * Returns the difference of the second region from the first region using an epsilon.
+   * @param A the list of indices corresponding to perceptual objects to take the difference from
+   * @param B the list of indices corresponding to perceptual objects used to take the difference
+   * @param epsilon the epsilon used to calculate the property
+   * @param sub the subscriber interested in the progress of execution
+   * @return a list containing the indices of objects left after taking the difference
+   */
   public List<Integer> hybridDifference(
       List<Integer> A, 
       List<Integer> B, 
@@ -286,11 +338,12 @@ public class PerceptualSystem<O> {
     }
     return rtn;
   }
-
+  
   /**
-   * Gives the descriptive compliment of the given region and the universe.
-   * @param region
-   * @return
+   * Returns the descriptive compliment of the given region within the perceptual system.
+   * @param region the list of indices corresponding to objects to use to find the compliment
+   * @param sub the subscriber interested in the progress of execution
+   * @return a list containing the indices of objects within the compliment
    */
   public List<Integer> compliment(
       List<Integer> region, 
@@ -298,6 +351,13 @@ public class PerceptualSystem<O> {
     return difference(objectsIndicesList(), region, sub);
   }
   
+  /**
+   * Returns the hybrid descriptive compliment of the given region within the perceptual system.
+   * @param region the list of indices corresponding to objects to use to find the compliment
+   * @param epsilon the epsilon used to calculate the property
+   * @param sub the subscriber interested in the progress of execution
+   * @return a list containing the indices of objects within the compliment
+   */
   public List<Integer> hybridCompliment(
       List<Integer> region, 
       double epsilon,
@@ -305,6 +365,10 @@ public class PerceptualSystem<O> {
     return hybridDifference(objectsIndicesList(), region, epsilon, sub);
   }
   
+  /**
+   * Returns a list containing the indices of all objects within the perceptual system.
+   * @return
+   */
   public List<Integer> objectsIndicesList() {
     List<Integer> indices = new ArrayList<Integer>(mObjects.length);
     for (int i = 0; i < mObjects.length; i++) {
@@ -316,7 +380,7 @@ public class PerceptualSystem<O> {
   /**
    * Gets the description of a perceptual object by applying every probe function to the object.
    * @param obj the perceptual object
-   * @return a map mapping each probe function to its applied value
+   * @return the description of the object
    */
   public Description getDescription(O obj) {
     // retrieve the description
@@ -328,6 +392,11 @@ public class PerceptualSystem<O> {
 //    }
   }
   
+  /**
+   * Gets the description of a perceptual object at the given index within the perceptual system.
+   * @param index the index corresponding to the perceptual object
+   * @return the description of the object
+   */
   public Description getDescription(int index) {
     // retrieve the description
 //    if (mCache) {
@@ -413,6 +482,11 @@ public class PerceptualSystem<O> {
     return mObjects[index];
   }
   
+  /**
+   * Sets the perceptual object at the given index.
+   * @param index the index to set
+   * @param obj the perceptual object being added
+   */
   public void addObject(int index, O obj) {
     // calculate description
 //    if (mCache) {
@@ -421,6 +495,11 @@ public class PerceptualSystem<O> {
     mObjects[index] = obj;
   }
   
+  /**
+   * Removes the perceptual object at the given index.
+   * @param index the index to remove
+   * @return the removed object
+   */
   public O removeObject(int index) {
     // update cache
     if (mCache) {
@@ -429,6 +508,9 @@ public class PerceptualSystem<O> {
     return mObjects[index] = null;
   }
   
+  /**
+   * Clears all perceptual objects from the system.
+   */
   public void clearObjects() {
     if (mCache) {
       mDescriptions.clear();
@@ -436,6 +518,10 @@ public class PerceptualSystem<O> {
     Arrays.fill(mObjects, null);
   }
   
+  /**
+   * Sets the perceptual objects to the given array.
+   * @param objs the array of perceptual objects to use
+   */
   public void setObjects(O[] objs) {
     mObjects = Arrays.copyOf(objs, objs.length);
   }
@@ -476,8 +562,9 @@ public class PerceptualSystem<O> {
 //        mDescriptions.get(i).remove(index);
 //      }
 //    }
-    mProbeFuncCount--;
-    return mProbeFuncs.remove(func);
+    boolean removed = mProbeFuncs.remove(func);
+    if (removed) mProbeFuncCount--;
+    return removed;
   }
   
   /**
