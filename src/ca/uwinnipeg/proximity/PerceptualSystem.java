@@ -201,15 +201,22 @@ public class PerceptualSystem<O> {
     boolean[] matchesB = new boolean[descsB.length];
     Arrays.fill(matchesB, false);
     
+    // FIXME: somewhere in here is the error
     for (int i = 0; i < descsA.length; i++) {
       
       if (sub.isCancelled()) return null;
+      
       Description descA = descsA[i];
       boolean matched = false;
+      
       for (int j = 0; j < descsB.length; j++) {
-        if (!matched && !matchesB[j]) {
+        
+        // if either has not been matched
+        if (!matched || !matchesB[j]) {
+          
+          // check the distance between the two
           Description descB = descsB[j];
-          if (descA.squaredDistance(descB) < e2) {
+          if (descA.squaredDistance(descB) <= e2) {
             matchesB[j] = true;
             matched = true;
           }
@@ -218,6 +225,8 @@ public class PerceptualSystem<O> {
       if (matched) matchesA[i] = true;
       sub.onProgressSet(i / (float)descsA.length);
     }
+    
+    // combine results
     Set<Integer> rtn = new HashSet<Integer>();
     getIndices(matchesA, descsA, descsMapA, rtn);
     getIndices(matchesB, descsB, descsMapB, rtn);

@@ -78,7 +78,7 @@ public class Description {
    * @return
    */
   public double distance(Description other) {
-    return Math.sqrt(distance(other));
+    return Math.sqrt(squaredDistance(other));
   }
   
   /**
