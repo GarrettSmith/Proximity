@@ -3,6 +3,7 @@
  */
 package ca.uwinnipeg.proximity.image;
 
+import ca.uwinnipeg.proximity.Description;
 import ca.uwinnipeg.proximity.PerceptualSystem;
 
 /**
@@ -11,7 +12,7 @@ import ca.uwinnipeg.proximity.PerceptualSystem;
  *
  */
 // TODO: throw exceptions for methods that add outside of image bounds
-public class Image extends PerceptualSystem<Integer> {
+public class Image extends PerceptualSystem<Integer, ImageFunc> {
   
   protected int mWidth, mHeight, mSize;
   
@@ -64,6 +65,14 @@ public class Image extends PerceptualSystem<Integer> {
     return index / mWidth;
   }
   
+  public int[] getPixels() {
+	  int[] pixels = new int[mSize];
+	  for (int i = 0; i < mSize; i++) {
+		  pixels[i] = mObjects[i];
+	  }
+	  return pixels;
+  }
+  
   public int[] getPixels(int left, int top, int right, int bottom) {
     int w = (right - left);
     int h = (bottom - top);
@@ -84,6 +93,15 @@ public class Image extends PerceptualSystem<Integer> {
       indices[i] = (top + (i / w)) * mWidth + (left + (i % w));
     }
     return indices;
+  }
+
+  @Override
+  public Description getDescription(int index) {
+    double[] desc = new double[mProbeFuncs.size()];
+    for (int i = 0; i < desc.length; i++) {
+      desc[i] = mProbeFuncs.get(i).apply(index, this);
+    }
+    return new Description(desc);
   }
 
 }

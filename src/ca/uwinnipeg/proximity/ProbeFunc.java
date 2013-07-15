@@ -6,7 +6,7 @@ package ca.uwinnipeg.proximity;
  * @author Garrett Smith
  *
  */
-public abstract class ProbeFunc<T> {
+public abstract class ProbeFunc<T, S extends PerceptualSystem<T, ?>> {
   
   public final double MAXIMUM;
   public final double MINIMUM;
@@ -17,7 +17,7 @@ public abstract class ProbeFunc<T> {
    * @param t the perceptual object.
    * @return the real value representing the feature between minimum() and maximum().
    */
-  protected abstract double map(T t);  
+  protected abstract double map(int index, S system);  
 
   
   /**
@@ -31,12 +31,12 @@ public abstract class ProbeFunc<T> {
   }
   
   /**
-   * Maps a perceptual object to a normalised real value representing a feature.
+   * Maps a perceptual object to a normalized real value representing a feature.
    * @param t the perceptual object.
-   * @return the normalised real value representing the feature.
+   * @return the normalized real value representing the feature.
    */
-  public double apply(T t) {
-    double result = map(t);
+  public double apply(int index, S perceptualSystem) {
+    double result = map(index, perceptualSystem);
     //double max = maximum();
     //double min = minimum();
     

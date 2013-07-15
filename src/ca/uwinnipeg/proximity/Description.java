@@ -2,44 +2,23 @@ package ca.uwinnipeg.proximity;
 
 import java.util.Arrays;
 
-/**
- * A description is a collection of values calculated via {@link ProbeFunc} corresponding to a 
- * perceptual object.
- * @author Garrett Smith
- *
- */
 public class Description {
   
-  // the calculated values
   protected final double[] mValues;
   
-  // Cache the hash code to speed up comparisons
-  protected Integer mHashCode = null;
-  
-  /**
-   * Creates a description with the given values.
-   * @param values
-   */
   public Description(double[] values) {
     mValues = values;
   }    
   
-  /**
-   * Returns the array of values.
-   * @return
-   */
   public double[] getValues() {
     return mValues;
   }
   
-  /**
-   * Returns the value at the given index.
-   * @param index
-   * @return
-   */
   public double getValue(int index) {
     return mValues[index];
   }
+  
+  protected Integer mHashCode = null;
   
   @Override
   public int hashCode() {
@@ -63,31 +42,14 @@ public class Description {
     return true;
   }
   
-  /**
-   * Checks if this description is equal to another.
-   * @param other
-   * @return
-   */
   public boolean equals(Description other) {
     return Arrays.equals(mValues, other.mValues);
   }
   
-  /**
-   * Calculates the distance between this description and another.
-   * @param other
-   * @return
-   */
   public double distance(Description other) {
-    return Math.sqrt(squaredDistance(other));
+    return Math.sqrt(distance(other));
   }
   
-  /**
-   * Calculates the squared distance between this description and another.
-   * <p>
-   * This is faster than calculating the distance as it avoids taking the square root.
-   * @param other
-   * @return
-   */
   public double squaredDistance(Description other) {
     double sum = 0;
     for (int i = 0; i < mValues.length; i++) {
